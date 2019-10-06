@@ -1,0 +1,46 @@
+header {
+  display: flex !important;
+  margin: auto !important;
+  /* margin-top: 1% !important; */
+  width: 90% !important;
+  /* background-color: aqua !important; */
+  height: 10vh !important;
+  align-items: center !important;
+}
+
+.landingpagbrnav {
+  flex: 5;
+}
+
+.landingpagelogo {
+  flex: 1 !important;
+  font-weight: 600 !important;
+  background-color: unset !important;
+  color: #ffffff !important;
+}
+
+.landingpagenavlinks {
+  display: flex !important;
+  justify-content: space-around !important;
+  background-color: unset !important;
+  justify-content: flex-end;
+}
+
+.landingpagenavlink {
+  font-size: 18px;
+  text-decoration: none !important;
+  background-color: unset !important;
+  cursor: pointer;
+}
+
+nav {
+  background-color: unset !important;
+}
+
+.landingpagenavbar {
+  /* background-color: aqua !important; */
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0, 0 0 0 0, 0 0 0 0 !important;
+  flex: 2;
+  align-items: center !important;
+}

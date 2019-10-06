@@ -1,0 +1,26 @@
+.bootsrtapaltert {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-radius: 0.25rem;
+  width: 21%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.danger {
+  color: #813838;
+  background-color: #fee2e1;
+  border-color: #fdd6d6;
+}
+
+.success {
+  color: #28623c;
+  background-color: #dbf2e3;
+  border-color: #cdedd8;
+}

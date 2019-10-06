@@ -1,0 +1,75 @@
+#myProgress {
+  width: 100%;
+  background-color: grey;
+}
+
+#myBar {
+  width: 1%;
+  height: 30px;
+  background-color: green;
+}
+
+.dashboardmain {
+  margin-top: 8%;
+}
+
+.fileuploadbtn {
+  margin-left: 10%;
+  background-color: #2f2aef !important;
+}
+
+.dashboardbtngroup {
+  display: flex !important;
+  justify-content: flex-end !important;
+  justify-content: space-around !important;
+}
+
+.dashboardbtn {
+  background-color: #2f2aef !important;
+  color: #ffffff;
+  line-height: 36px;
+  text-transform: uppercase;
+  box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12),
+    0 3px 1px -1px rgba(0, 0, 0, 0.2);
+
+  height: 3rem;
+  line-height: 3rem;
+  text-decoration: none;
+  color: #fff;
+
+  text-align: center;
+  letter-spacing: 0.5px;
+  /* -webkit-transition: background-color 0.2s ease-out;
+  transition: background-color 0.2s ease-out; */
+  cursor: pointer;
+  font-size: 14px;
+  outline: 0;
+  border: none;
+  border-radius: 2px;
+  display: inline-block;
+  /* height: 36px; */
+
+  padding: 0 12px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboardbtncreatefolder {
+  /* flex: 0.5 !important; */
+  margin-left: 10%;
+}
+.dashboardbtnbr {
+  flex: 4;
+}
+
+.dashboardbackicon {
+  vertical-align: middle;
+  height: 60%;
+}
+
+.dashboardpathdiv {
+  margin-top: 1%;
+  height: 20%;
+  font-size: 2rem;
+}
