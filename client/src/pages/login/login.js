@@ -114,7 +114,7 @@ class Login extends Component {
       <div className="maindivlogin">
         <Navbar />
         <div className="wrapper">
-          <div className="form-wrapper">
+          <div className="form-wrapper-login">
             <div className="headingwrapperlogin">
               <h3>Your files are excited to see you</h3>
             </div>
@@ -122,42 +122,42 @@ class Login extends Component {
             <div className="informm">
               <br />
 
-              <form onSubmit={this.btn1handler}>
+              <form className="loginform" onSubmit={this.btn1handler}>
                 <br />
                 <br />
                 <br />
 
-                <div className="input-field">
+                <div class="form-group">
+                  {/* <label for="exampleInputEmail1">Email address</label> */}
                   <input
                     id="email"
                     required
                     type="email"
                     name="email"
-                    className="inputlogin"
+                    className="form-control"
+                    placeholder="Enter your email"
                     onChange={this.changehandleremail}
                   />
-                  <label className="logininputlabel" for="email">
-                    Email
-                  </label>
                 </div>
-                <div className="input-field">
+
+                <div class="form-group">
+                  {/* <label for="exampleInputEmail1">Email address</label> */}
                   <input
                     required
                     id="pass"
                     type="password"
                     name="pass"
-                    className="inputlogin"
+                    className="form-control"
+                    placeholder="Enter your password"
                     onChange={this.changehandlerpass}
                   />
-                  <label className="logininputlabel" for="pass">
-                    Password
-                  </label>
                 </div>
+
                 <div className="submit">
                   <input
                     type="submit"
-                    className="btn loginbtn"
-                    value="sign in"
+                    className="btn btn-primary loginbtn"
+                    value="Login"
                   />
                 </div>
               </form>

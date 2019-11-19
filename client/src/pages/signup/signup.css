@@ -1,4 +1,5 @@
 .maindivsignup {
+  font-family: "Rubik", sans-serif !important;
   position: fixed;
   align-self: center;
   height: 100vh;
@@ -38,30 +39,95 @@
 }
 
 .informmsignup {
-  margin-top: 0px;
+  margin-top: 10%;
+  /* display: flex; */
 }
 
-.input-field {
-  margin-bottom: 0 !important;
-  margin-top: 0 !important;
-}
-
-.input-field [type="text"] {
-  color: white;
-}
-
-.input-field [type="password"] {
-  color: white;
-}
-
-.inputsignup {
-  border-bottom: 1px solid #ffffff !important;
-}
-
-.logininputlabel {
-  color: #fff !important;
+.checkterms {
+  margin-left: 1%;
 }
 
 .signupheading {
-  margin-top: 20px !important;
+  margin-top: 1px !important;
+  /* margin-bottom: -20px !important; */
 }
+
+.signupbtn {
+  margin-top: 1px !important;
+}
+
+.privarcypolicyanchor {
+  color: #fff;
+}
+
+@media screen and (max-width: 1000px) {
+  /* enter some CSS */
+  .form-wrappersignup {
+    height: 86%;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px;
+    border-radius: 5px;
+    /* margin-left: 1000px; */
+    box-shadow: 0px 1px 5px #555;
+    color: #fff;
+    animation: swipdown 1.5s ease;
+    /* background-color: #ffffff; */
+  }
+}
+@media screen and (max-width: 750px) {
+  /* enter some CSS */
+  .form-wrappersignup {
+    height: 86%;
+    width: 83%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px;
+    border-radius: 5px;
+    /* margin-left: 1000px; */
+    box-shadow: 0px 1px 5px #555;
+    color: #fff;
+    animation: swipdown 1.5s ease;
+    /* background-color: #ffffff; */
+  }
+
+  .informmsignup {
+    margin-top: 1%;
+    /* display: flex; */
+  }
+}
+@media screen and (max-width: 632px) {
+  /* enter some CSS */
+  .form-wrappersignup {
+    height: 86%;
+    width: 87%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px;
+    border-radius: 5px;
+    /* margin-left: 1000px; */
+    box-shadow: 0px 1px 5px #555;
+    color: #fff;
+    animation: swipdown 1.5s ease;
+    /* background-color: #ffffff; */
+  }
+}
+@media screen and (max-width: 500px) {
+  /* enter some CSS */
+  .form-wrappersignup {
+    height: 86%;
+    width: 93%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px;
+    border-radius: 5px;
+    /* margin-left: 1000px; */
+    box-shadow: 0px 1px 5px #555;
+    color: #fff;
+    animation: swipdown 1.5s ease;
+    /* background-color: #ffffff; */
+  }
+}
+
+/* @media  */

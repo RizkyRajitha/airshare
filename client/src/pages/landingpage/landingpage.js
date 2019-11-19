@@ -1,10 +1,19 @@
 import React, { Component } from "react";
 import Navbar from "../../components/navbar/navbar";
 import Footer from "../../components/footer/footer";
-// import "./css/main.css";
-// import "./landingpage.css";
+
 import "./landingpage.css";
+const jwt = require("jsonwebtoken");
 class Landingpage extends Component {
+  componentDidMount() {
+    var token = localStorage.getItem("jwt");
+
+    try {
+      var decode = jwt.verify(token, "authdemo");
+      this.props.history.push("/dashboard");
+    } catch (error) {}
+  }
+
   render() {
     return (
       <div className="maindivlandingpage">
@@ -15,19 +24,20 @@ class Landingpage extends Component {
             <div className="intro">
               <div className="intro-heading">
                 <h2 className="intro-headingh2">
-                  cool new way of accessing
-                  <br /> your files around the world
+                  Cool new way of accessing
+                  <br /> Your files around the world
                 </h2>
-                <p className="landingpagepara">
-                  we make sure you can access your files through your platfrom
-                  without compromising your password
-                </p>
+                <div className="landingpagepara">
+                  <br />
+                  We make sure you can access your files through any platfrom
+                  without compromising your passwords
+                </div>
               </div>
               <button
                 onClick={() => this.props.history.push("/signup")}
                 className="landingpagebtn"
               >
-                Sneek a peek
+                Sneek a Peek 👀
               </button>
             </div>
           </section>
@@ -39,5 +49,3 @@ class Landingpage extends Component {
 }
 
 export default Landingpage;
-
-

@@ -11,18 +11,13 @@ class Navbar extends Component {
             className="logonamelandingpage"
             src="https://img.icons8.com/nolan/64/000000/share.png"
           />
-          {/* <h4
-            onClick={() => this.props.history.push("/")}
-            className="logonamelandingpage"
-          >
-            AIR_SHARE
-          </h4> */}
+          <span className="landigpageversionspan">BETA v1.0</span>
         </div>
         <div className="landingpagbrnav">
           {/* <h4 className="logonamelandingpage">Logo</h4> */}
         </div>
         <nav className="landingpagenavbar">
-          <ul className="landingpagenavlinks">
+          <ul className=" list-unstyled landingpagenavlinks">
             {/* <li
               className="landingpagenavlink"
               onClick={() => this.props.history.push("/")}
@@ -49,7 +44,7 @@ class Navbar extends Component {
             </li>
             <li
               className="landingpagenavlink"
-              onClick={() => this.props.history.push("/aboutus")}
+              onClick={() => window.open("https://rizkyrajitha.github.io/")}
             >
               about us
             </li>

@@ -196,14 +196,14 @@ class Templogin extends Component {
                 <br />
                 <br />
 
-                <div className="input-field">
+                <div className="form-group">
                   <input
-                    placeholder="Enter email"
+                    className="form-control"
+                    placeholder="Enter your email"
                     id="username"
                     type="email"
                     required
                     onChange={e => this.setState({ email: e.target.value })}
-                    className="inputforgotpassword"
                   />
                   {/* <label className="forgotpasswordinputlabel" for="email">
                     Email
@@ -268,7 +268,12 @@ class Templogin extends Component {
                 having a problem
                 <Link to="/contactsupport">
                   <span> </span>{" "}
-                  <a className="ladinpageatag">contact support</a>
+                  <a
+                    className="ladinpageatag"
+                    href="http://rizkyrajitha.github.io/"
+                  >
+                    contact support
+                  </a>
                 </Link>
               </div>
             </div>

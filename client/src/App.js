@@ -9,7 +9,8 @@ import Forgotpassword from "./pages/forgotpassword/forgotpassword";
 import Templogin from "./pages/templogin/templogin";
 import Dashboardlite from "./pages/dashboardlite/dashboardlite";
 import Resetpassword from "./pages/resetpassword/resetpassword";
-import "./app.css";
+import Privacypolicy from "./pages/privacy/privacy";
+// import "./app.css";
 
 class App extends Component {
   componentDidMount() {}
@@ -26,6 +27,7 @@ class App extends Component {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/dashboardlite" component={Dashboardlite} />
           <Route path="/guestlogin" component={Templogin} />
+          <Route path="/privacypolicy" component={Privacypolicy} />
           <Route path="/resetpassword/:id" component={Resetpassword} />
         </Switch>
       </Router>

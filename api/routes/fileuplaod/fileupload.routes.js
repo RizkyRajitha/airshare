@@ -4,12 +4,14 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const User = require("../../models/users");
-
-const accessToken =
-  require('../../config/env').dropboxaccesstoken;
+var AWS = require("aws-sdk");
+AWS.config.update({ region: "us-east-2" });
+const accessToken = require("../../config/env").dropboxaccesstoken;
 
 var dbx = new Dropbox({ accessToken: accessToken, fetch: fetch });
 
+const awskey = require("../../config/env").awskey;
+const awsseacret = require("../../config/env").awsseacret;
 // const storageCv = multer.diskStorage({
 //   destination: path.join(__dirname ,'../../','assets'),
 //   filename: function(req, file, cb) {
@@ -18,6 +20,124 @@ var dbx = new Dropbox({ accessToken: accessToken, fetch: fetch });
 //     cb(null, req.params.id + path.extname(file.originalname));
 //   }
 // });
+
+exports.fileuploadawss3 = (req, res) => {
+  console.log(req.files);
+  var files = req.files;
+  console.log("s3");
+
+  let s3bucket = new AWS.S3({
+    accessKeyId: awskey,
+    secretAccessKey: awsseacret
+    // Bucket: BUCKET_NAME
+  });
+
+  var promisarr = [];
+  function multiplefiles3(resobj) {
+    console.log(resobj.originalname);
+    var params = {
+      Bucket: "natalie1234",
+      Key: resobj.originalname,
+      Body: resobj.buffer
+    };
+    return s3bucket.upload(params).promise();
+  }
+  var uploadsize = 0;
+  files.map(file => {
+    uploadsize = uploadsize + file.size;
+    promisarr.push(multiplefiles3(file));
+  });
+
+  User.findOne({ _id: req.id })
+    .then(doc => {
+      console.log(parseInt(doc.storageSpace));
+      var remainspace = 100 * 1024 * 1024 - parseInt(doc.storageSpace);
+      console.log("remain space ", remainspace);
+      console.log("upload size  ", uploadsize);
+      if (remainspace > uploadsize) {
+        console.log("go........");
+        var newstorage = parseInt(doc.storageSpace) + parseInt(uploadsize);
+        console.log(newstorage);
+        Promise.all(promisarr)
+          .then(result => {
+            console.log(result);
+
+            result.forEach(element => {
+              User.updateOne(
+                { _id: req.id },
+                {
+                  $push: {
+                    resources: {
+                      name: element.key, //file name
+                      path: element.key, // file path
+                      contenthash: element.ETag,
+                      type: "file", //file or a folder
+                      created: new Date().toISOString() //timestamp
+                    }
+                  }
+                }
+              )
+                .then(doc => {
+                  console.log(doc);
+                  User.findOneAndUpdate(
+                    { _id: req.id },
+                    {
+                      $set: {
+                        storageSpace: newstorage
+                      }
+                    }
+                  )
+                    .then(docup => {
+                      console.log(docup);
+                      res.status(200).json({ msg: "success" });
+                    })
+                    .catch(err => {
+                      console.log(err);
+                      res.status(200).json({ msg: "error" });
+                    });
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            });
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        res.status(200).json({ msg: "lowspace" });
+        console.log("limit off");
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    });
+};
+
+exports.fileuploadmanaged = (req, res) => {
+  let s3bucket = new AWS.S3({
+    accessKeyId: awskey,
+    secretAccessKey: awsseacret
+    // Bucket: BUCKET_NAME
+  });
+
+  console.log(req.file);
+
+  var params = {
+    Bucket: "natalie1234",
+    Key: req.file.originalname,
+    Body: req.file.buffer
+  };
+
+  var upload = new AWS.S3.ManagedUpload({
+    partSize: 10 * 1024 * 1024,
+    queueSize: 1,
+    params: params
+  }).send((err, data) => {
+    console.log(err);
+    console.log(data);
+  });
+};
 
 exports.fileuploaddemo = (req, res) => {
   console.log("upload file");

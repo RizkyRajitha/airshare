@@ -3,10 +3,10 @@ const router = express.Router();
 
 const apiroutes = require("./api.routes");
 
-router.post("/getfolderinfo", apiroutes.getfolderinfo);
+router.get("/getfolderinfo", apiroutes.getfolderinfo);
+router.get("/userdata", apiroutes.getuserdata);
 router.post("/gettemplink", apiroutes.gettemplink);
-router.post("/createnewfolder", apiroutes.createfolder);
-router.post("/downloadzip", apiroutes.downloadzip);
 router.post("/allowaccess", apiroutes.allowaccess);
-
+router.post("/deletefile", apiroutes.deletefile);
+router.post("/addtorrent", apiroutes.addtorrent);
 module.exports = router;

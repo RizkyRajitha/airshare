@@ -10,10 +10,22 @@ const fileup = multer({ storage: storage });
 
 const fileuploadroutes = require("./fileupload.routes");
 
+// router.post(
+//   "/uploadfile",
+//   fileup.single("resobj"),
+//   fileuploadroutes.fileupload
+// );
+
 router.post(
-  "/uploadfile",
+  "/uploadfileawss3",
+  fileup.array("resobj"),
+  fileuploadroutes.fileuploadawss3
+);
+
+router.post(
+  "/uploadfileawss3managed",
   fileup.single("resobj"),
-  fileuploadroutes.fileupload
+  fileuploadroutes.fileuploadmanaged
 );
 
 // router.post(

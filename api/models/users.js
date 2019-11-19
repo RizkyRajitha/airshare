@@ -17,7 +17,10 @@ var userSchema = new Schema({
   firstName: {
     type: String
   },
-
+  emailverified: {
+    type: Boolean,
+    default: false
+  },
   lastName: {
     type: String
   },
@@ -34,8 +37,8 @@ var userSchema = new Schema({
     type: String
   },
   storageSpace: {
-    type: String,
-    unique: true
+    type: Number,
+    default: 0
   },
   phone: {
     type: String

@@ -1,3 +1,13 @@
+.table {
+  /* table-layout: fixed; */
+}
+
+/* .tabledatanamedash {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} */
+
 #myProgress {
   width: 100%;
   background-color: grey;
@@ -11,48 +21,16 @@
 
 .dashboardmain {
   margin-top: 8%;
-}
-
-.fileuploadbtn {
-  margin-left: 10%;
-  background-color: #2f2aef !important;
+  /* width: 90% !important */
 }
 
 .dashboardbtngroup {
   display: flex !important;
   justify-content: flex-end !important;
   justify-content: space-around !important;
-}
-
-.dashboardbtn {
-  background-color: #2f2aef !important;
-  color: #ffffff;
-  line-height: 36px;
-  text-transform: uppercase;
-  box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12),
-    0 3px 1px -1px rgba(0, 0, 0, 0.2);
-
-  height: 3rem;
-  line-height: 3rem;
-  text-decoration: none;
-  color: #fff;
-
-  text-align: center;
-  letter-spacing: 0.5px;
-  /* -webkit-transition: background-color 0.2s ease-out;
-  transition: background-color 0.2s ease-out; */
-  cursor: pointer;
-  font-size: 14px;
-  outline: 0;
-  border: none;
-  border-radius: 2px;
-  display: inline-block;
-  /* height: 36px; */
-
-  padding: 0 12px;
-  text-transform: uppercase;
-  vertical-align: middle;
-  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 1%;
+  margin-top: 10%;
+  /* height: 10px */
 }
 
 .dashboardbtncreatefolder {
@@ -72,4 +50,59 @@
   margin-top: 1%;
   height: 20%;
   font-size: 2rem;
+}
+
+.custom-file-input + label {
+  /* font-size: 200%; */
+  height: 56.5px !important;
+  /* font-size: 1.25em;
+  font-weight: 700;
+  color: white;
+  background-color: #2f2aef !important;
+  display: inline-block; */
+}
+
+.custom-file-input:focus + label,
+.custom-file-input + label:hover {
+  /* color: white;
+  background-color: #2f2aef !important; */
+}
+
+.dashfileinput {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.backbtn {
+  background-color: #2f2aef !important;
+  padding-left: 2%;
+  padding-right: 2%;
+}
+
+.createfile {
+  background-color: #2f2aef !important;
+  padding-left: 2%;
+  padding-right: 2%;
+}
+
+.fileuploadbtn {
+  margin-left: 1%;
+  /* background-color: #2f2aef !important; */
+  padding-left: 2%;
+  padding-right: 2%;
+  margin-bottom: 1% !important;
+}
+
+i {
+  font-size: 1.5rem;
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1400px;
+  }
 }

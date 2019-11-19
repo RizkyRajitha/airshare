@@ -8,12 +8,12 @@ var storage = multer.memoryStorage();
 
 const fileup = multer({ storage: storage });
 
-router.post("/createfolder", tempaccessroutes.createfolder);
+// router.post("/createfolder", tempaccessroutes.createfolder);
 router.post("/getfolderinfo", tempaccessroutes.getfolderinfo);
 router.post("/gettemplink", tempaccessroutes.gettemplink);
 router.post(
   "/fileupload",
-  fileup.single("resobj"),
+  fileup.array("resobj"),
   tempaccessroutes.fileuploaddemo
 );
 

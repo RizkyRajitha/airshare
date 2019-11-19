@@ -8,23 +8,26 @@ class Footer extends Component {
         <div className="landingpagefooterdiv">
           <div className="landingpagefooterdivitembr"></div>
           <div className="landingpagefooterdivitem">
-            <a className="landingpagefooterdivitemlink" href="/">
+            <a
+              className="landingpagefooterdivitemlink"
+              href="http://rizkyrajitha.github.io/"
+            >
               {" "}
               contact us{" "}
             </a>
           </div>
           <div className="landingpagefooterdivitem">
-            <a className="landingpagefooterdivitemlink" href="/">
+            <a className="landingpagefooterdivitemlink" href="/privacypolicy">
               {" "}
               privacy policy
             </a>
           </div>
-          <div className="landingpagefooterdivitem">
+          {/* <div className="landingpagefooterdivitem">
             <a className="landingpagefooterdivitemlink" href="/">
-              {/* {" "} &#9749; */}
+             
               buy me coffee ☕
             </a>
-          </div>
+          </div> */}
           <div
             className="landingpagefooterdivitem"
             className="landingpagefooterdivitembr"

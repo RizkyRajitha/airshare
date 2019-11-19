@@ -4,6 +4,7 @@ import Navbar from "../../components/navbar/navbar";
 import Altert from "../../components/altert";
 import Footer from "../../components/footer/footer";
 import "./signup.css";
+const jwt = require("jsonwebtoken");
 class Signup extends Component {
   state = {
     email: "",
@@ -14,11 +15,27 @@ class Signup extends Component {
     password: "",
     alerthidden: true,
     alertext: "",
-    alertaction: ""
+    alertaction: "",
+    unamevlid: null,
+    confirmemail: false,
+    invitecode: ""
   };
+  componentDidMount() {
+    var token = localStorage.getItem("jwt");
 
+    try {
+      var decode = jwt.verify(token, "authdemo");
+      this.props.history.push("/dashboard");
+    } catch (error) {}
+  }
   onsubmit = e => {
     e.preventDefault();
+
+    this.setState({
+      alerthidden: true,
+      alertext: "",
+      alertaction: ""
+    });
 
     console.log(this.state);
 
@@ -28,24 +45,40 @@ class Signup extends Component {
       lastName: this.state.lastName,
       phone: this.state.phone,
       username: this.state.username,
-      password: this.state.password
+      password: this.state.password,
+      invitecode: this.state.invitecode
     };
 
     axios
       .post("/reg/signup", payload)
       .then(res => {
-        console.log(res.data);
-        this.props.history.push("/dashboard");
-      })
-      .catch(err => {
-        console.log(err);
-        if (err.response.data.msg === "dupuser") {
+        console.log(res.data.msg);
+
+        if (res.data.msg === "dupuser") {
           this.setState({
             alerthidden: false,
             alertext: "Error This email is in use",
             alertaction: "danger"
           });
+        } else if (res.data.msg === "BucketAlreadyExists") {
+          this.setState({
+            alerthidden: false,
+            alertext: "Error This Username is unavailable",
+            alertaction: "danger"
+          });
+        } else if (res.data.msg === "invalidinvite") {
+          this.setState({
+            alerthidden: false,
+            alertext: "Error This Invite code is unavailable",
+            alertaction: "danger"
+          });
+        } else {
+          // this.setState({ confirmemail: true });
+          this.props.history.push("/login");
         }
+      })
+      .catch(err => {
+        console.log(err);
       });
   };
 
@@ -53,9 +86,7 @@ class Signup extends Component {
     console.log(uname);
     var usernsmae = new String(uname);
     if (usernsmae.length < 5) {
-      // document
-      //   .getElementById("signupusername")
-      // .setAttribute("data-error", "username too short");
+      this.setState({ unamevlid: false });
     } else {
       // document.getElementById("signupusername").removeAttribute("data-error");
       console.log("check username");
@@ -65,14 +96,8 @@ class Signup extends Component {
           console.log(res.data);
           if (res.data.msg === "valid") {
             this.setState({ unamevlid: true }); //data-error="wrong" data-success="right"
-            // document
-            //   .getElementById("signupusername")
-            //   .setAttribute("data-success", "username valid");
           } else if (res.data.msg === "invalid") {
             this.setState({ unamevlid: false });
-            // document
-            //   .getElementById("signupusername")
-            //   .setAttribute("data-error", "invalid username");
           }
         })
         .catch(err => {
@@ -91,124 +116,117 @@ class Signup extends Component {
             <div className="informmsignup">
               <form onSubmit={this.onsubmit}>
                 <div class="row">
-                  <div class="input-field ">
-                    <input
-                      id="email"
-                      type="text"
-                      class="validate inputsignup inputsignup"
-                      onChange={e => this.setState({ email: e.target.value })}
-                    />
-                    <label className="logininputlabel" for="email">
-                      email
-                    </label>
+                  <div class="col">
+                    <div className="form-group pt-2">
+                      <input
+                        // placeholder="Placeholder"
+                        id="first_name"
+                        type="text"
+                        className="form-control"
+                        required
+                        onChange={e =>
+                          this.setState({ firstaName: e.target.value })
+                        }
+                        placeholder="Enter your First name"
+                      />
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div className="form-group pt-2">
+                      <input
+                        // placeholder="Placeholder"
+                        id="lastname"
+                        type="text"
+                        required
+                        className="form-control"
+                        placeholder="Enter your Last Name"
+                        onChange={e =>
+                          this.setState({ lastName: e.target.value })
+                        }
+                      />{" "}
+                    </div>
                   </div>
                 </div>
 
-                <div class="row">
-                  <div class="input-field ">
-                    <input
-                      // placeholder="Placeholder"
-                      id="first_name"
-                      type="text"
-                      class="validate inputsignup"
-                      onChange={e =>
-                        this.setState({ firstaName: e.target.value })
-                      }
-                    />
-                    <label className="logininputlabel" for="first_name">
-                      First Name
-                    </label>
-                  </div>
+                <div className="form-group pt-2">
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    className="form-control"
+                    onChange={e => this.setState({ email: e.target.value })}
+                    placeholder="Enter your email"
+                  />
                 </div>
 
-                <div class="row">
-                  <div class="input-field ">
-                    <input
-                      // placeholder="Placeholder"
-                      id="lastname"
-                      type="text"
-                      class="validate inputsignup"
-                      onChange={e =>
-                        this.setState({ lastName: e.target.value })
-                      }
-                    />
-                    <label className="logininputlabel" for="lastname">
-                      Last Name
-                    </label>
-                  </div>
+                <div className="form-group pt-2">
+                  <input
+                    id="username"
+                    type="text"
+                    required
+                    className={
+                      this.state.unamevlid
+                        ? "form-control is-valid"
+                        : this.state.unamevlid === null
+                        ? "form-control "
+                        : "form-control is-invalid"
+                    }
+                    minLength="8"
+                    placeholder="Enter your prefered username"
+                    onChange={e => {
+                      this.setState({ username: e.target.value });
+                      this.chechusername(e.target.value);
+                    }}
+                  />
                 </div>
 
-                <div class="row">
-                  <div class="input-field ">
-                    {/* <img
-                      class="material-icons prefix"
-                      src="https://img.icons8.com/color/48/000000/cancel--v1.png"
-                    />
-                    <img src="https://img.icons8.com/color/27/000000/ok--v2.png"></img> */}
+                <div className="form-group pt-2">
+                  <input
+                    // placeholder="Placeholder"
+                    id="password"
+                    type="password"
+                    required
+                    className="form-control"
+                    placeholder="Enter your password"
+                    onChange={e => this.setState({ password: e.target.value })}
+                  />
+                </div>
 
+                <div className="form-group pt-2">
+                  <input
+                    // placeholder="Placeholder"
+                    id="invitecode"
+                    type="text"
+                    required
+                    className="form-control"
+                    placeholder="Enter your Invite code"
+                    minLength="6"
+                    onChange={e =>
+                      this.setState({ invitecode: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="form-group  pt-2">
+                  <div className="form-check">
                     <input
-                      id="username"
-                      type="text"
-                      class="validate inputsignup"
-                      minLength="6"
-                      onChange={e => {
-                        this.setState({ username: e.target.value });
-                        this.chechusername(e.target.value);
-                      }}
+                      className="form-check-input"
+                      type="checkbox"
+                      id="gridCheck1"
+                      required
                     />
-                    <label className="logininputlabel" for="username">
-                      Username
-                    </label>
-                    <span
-                      hidden={this.state.unamevlid}
-                      // id="signupusername"
-                      class="helper-text"
-                    >
-                      invalid usernaame
+
+                    <span className="checkterms">
+                      {" "}
+                      I accept the Terms of Use &{" "}
+                      <a className='privarcypolicyanchor' href="/privacypolicy"> Privacy Policy </a>
                     </span>
-                    <span
-                      hidden={!this.state.unamevlid}
-                      // id="signupusername"
-                      class="helper-text"
-                    >
-                      valid usernaame
-                    </span>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="input-field ">
-                    <input
-                      // placeholder="Placeholder"
-                      id="password"
-                      type="password"
-                      class="validate inputsignup"
-                      onChange={e =>
-                        this.setState({ password: e.target.value })
-                      }
-                    />
-                    <label className="logininputlabel" for="password">
-                      password
-                    </label>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="input-field ">
-                    <input
-                      // placeholder="Placeholder"
-                      id="phone"
-                      type="text"
-                      class="validate inputsignup"
-                      onChange={e => this.setState({ phone: e.target.value })}
-                    />
-                    <label className="logininputlabel" for="phone">
-                      phone number
-                    </label>
                   </div>
                 </div>
                 <button
-                  className="btn waves-effect waves-light  light-blue darken-4    "
+                  className="btn btn-primary  signupbtn"
                   type="submit"
-                  name="action"
+                  disabled={!this.state.unamevlid}
                 >
                   Signup
                 </button>

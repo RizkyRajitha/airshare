@@ -1,14 +1,23 @@
 // const Nexmo = require("nexmo");
 
-const accountSid = require("../../config/env").twilliosid;
-const authToken = require("../../config/env").twilliotoken;
-const twillioclient = require("twilio")(accountSid, authToken);
-const apiurl = require("../../config/env").api;
-const sendgridkey = require("../../config/env").sendgridkey;
-const telegramtoke = require("../../config/env").telegramtoken;
-const telegramchatid = require("../../config/env").telegramchatid;
+const apiurl = process.env.apiurl || require("../../config/env").api;
+const sendgridkey =
+  process.env.sendgridkey || require("../../config/env").sendgridkey;
+const telegramtoke =
+  process.env.telegramtoke || require("../../config/env").telegramtoken;
+const telegramchatid =
+  process.env.telegramchatid || require("../../config/env").telegramchatid;
+
+const telegramtokelogger =
+  process.env.telegramtokelogger ||
+  require("../../config/env").telegramtokelogger;
+const telegramchatidlogger =
+  process.env.telegramchatidlogger ||
+  require("../../config/env").telegramchatidlogger;
+
 const sgMail = require("@sendgrid/mail");
-const jwtsecret = require("../../config/env").jwtsecret;
+const jwtsecret =
+  process.env.jwtsecret || require("../../config/env").jwtsecret;
 const jwt = require("jsonwebtoken");
 const User = require("../../models/users");
 const bcrypt = require("bcryptjs");
@@ -33,7 +42,7 @@ exports.login = (req, res) => {
             type: "regular"
           },
           jwtsecret,
-          { expiresIn: "3600m" }
+          { expiresIn: "600m" }
         );
 
         res.status(200).json({ msg: "success", token: token });
@@ -47,7 +56,7 @@ exports.login = (req, res) => {
 };
 
 exports.requestotp = (req, res) => {
-  const mymail = "rajitha123";
+  // const mymail = "rajitha123";
   console.log(req.body);
 
   User.findOne({ email: req.body.email })
@@ -151,7 +160,7 @@ exports.verifyotp = (req, res) => {
           };
 
           var token = jwt.sign(tokenpayload, jwtsecret, {
-            expiresIn: "100m"
+            expiresIn: "1m"
           });
 
           User.findOneAndUpdate(

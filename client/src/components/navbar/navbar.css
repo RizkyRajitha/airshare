@@ -1,11 +1,12 @@
 header {
   display: flex !important;
   margin: auto !important;
-  /* margin-top: 1% !important; */
+
   width: 90% !important;
-  /* background-color: aqua !important; */
+
   height: 10vh !important;
   align-items: center !important;
+  font-family: "Rubik", sans-serif !important;
 }
 
 .landingpagbrnav {
@@ -24,6 +25,8 @@ header {
   justify-content: space-around !important;
   background-color: unset !important;
   justify-content: flex-end;
+  list-style: none;
+  list-style-type: none;
 }
 
 .landingpagenavlink {
@@ -43,4 +46,7 @@ nav {
   box-shadow: 0 0 0 0, 0 0 0 0, 0 0 0 0 !important;
   flex: 2;
   align-items: center !important;
+}
+.landigpageversionspan {
+  margin-left: 12px;
 }

@@ -8,9 +8,18 @@ import Footer from "../../components/footer/footer";
 // import "./css/main.css";
 // import "./landingpage.css";
 import "./forgotpassoword.css";
-
+const jwt = require("jsonwebtoken");
 class Forgotpassword extends Component {
   state = { email: "", alerthidden: true, alertext: "", alertaction: "" };
+
+  componentDidMount() {
+    var token = localStorage.getItem("jwt");
+
+    try {
+      var decode = jwt.verify(token, "authdemo");
+      this.props.history.push("/dashboard");
+    } catch (error) {}
+  }
 
   onsubmit = e => {
     e.preventDefault();
@@ -65,23 +74,21 @@ class Forgotpassword extends Component {
             <div className="informmforgotpassword">
               <br />
 
-              <form onSubmit={this.onsubmit}>
+              <form className="forgotpasswordform" onSubmit={this.onsubmit}>
                 <br />
                 <br />
                 <br />
 
-                <div className="input-field">
+                <div className="form-group">
                   <input
                     id="email"
                     required
                     type="email"
                     name="email"
-                    className="inputforgotpassword"
+                    className="form-control"
+                    placeholder="Enter your email"
                     onChange={e => this.setState({ email: e.target.value })}
                   />
-                  <label className="forgotpasswordinputlabel" for="email">
-                    Email
-                  </label>
                 </div>
 
                 <div className="submit">
