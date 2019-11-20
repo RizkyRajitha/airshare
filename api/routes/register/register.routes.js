@@ -2,12 +2,14 @@ const User = require("../../models/users");
 const Invitecode = require("../../models/invitecodestemp");
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
-const sendgridkey = require("../../config/env").sendgridkey;
+const sendgridkey =
+  process.env.sendgridkey || require("../../config/env").sendgridkey;
 const sgMail = require("@sendgrid/mail");
-const jwtsecret = require("../../config/env").jwtsecret;
+const jwtsecret =
+  process.env.jwtsecret || require("../../config/env").jwtsecret;
 
-const awskey = require("../../config/env").awskey;
-const awsseacret = require("../../config/env").awsseacret;
+const awskey = process.env.awskey || require("../../config/env").awskey;
+const awsseacret = process.env.awskey || require("../../config/env").awsseacret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 exports.signup = (req, res) => {
@@ -74,26 +76,26 @@ exports.signup = (req, res) => {
                   });
 
                 res.status(200).json({ data: data, msg: "success" });
-                // sgMail.setApiKey(sendgridkey);
-                // const msg = {
-                //   to: "rajithagunathilake@gmail.com",
-                //   from: "support@airshare.com",
-                //   subject: "WELCOME TO AIRSHARE",
-                //   templateId: "d-fba82ccbc86c43538d32d49b4d8429d3",
-                //   dynamic_template_data: {
-                //     name: doc.firstName,
-                //     date: new Date().toUTCString(),
-                //     uniqeid: Math.floor(Math.random() * 1000000000)
-                //   }
-                // };
-                // sgMail
-                //   .send(msg)
-                //   .then(result => {
-                //     console.log(result);
-                //   })
-                //   .catch(err => {
-                //     console.log(err);
-                //   });
+                sgMail.setApiKey(sendgridkey);
+                const msg = {
+                  to: datain.email,
+                  from: "support@airshare.com",
+                  subject: "WELCOME TO AIRSHARE",
+                  templateId: "d-fba82ccbc86c43538d32d49b4d8429d3",
+                  dynamic_template_data: {
+                    name: doc.firstName,
+                    date: new Date().toUTCString(),
+                    uniqeid: Math.floor(Math.random() * 1000000000)
+                  }
+                };
+                sgMail
+                  .send(msg)
+                  .then(result => {
+                    console.log(result);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                  });
               } // successful response
             });
 

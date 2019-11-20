@@ -4,18 +4,16 @@ const User = require("../../models/users");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
-const ipdatakey = process.env.ipdatakey ||  require("../../config/env").ipdatakey;
-const apiurl =  process.env.apiurl || require("../../config/env").api;
+const ipdatakey =
+  process.env.ipdatakey || require("../../config/env").ipdatakey;
+const apiurl = process.env.apiurl || require("../../config/env").api;
 const WebTorrent = require("webtorrent");
-
-
 
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 
-const awskey = require("../../config/env").awskey;
-const awsseacret = require("../../config/env").awsseacret;
-
+const awskey = process.env.awskey || require("../../config/env").awskey;
+const awsseacret = process.env.awsseacret || require("../../config/env").awsseacret;
 
 let s3bucket = new AWS.S3({
   accessKeyId: awskey,
@@ -40,7 +38,7 @@ exports.getfolderinfo = (req, res) => {
   User.findOne({ _id: req.id })
     .then(doc => {
       var params = {
-        Bucket: "natalie1234"
+        Bucket: doc.userName
       };
       var promisarr = [];
       promisarr.push(s3bucket.listObjectsV2(params).promise());
@@ -94,73 +92,119 @@ exports.gettemplink = (req, res) => {
   // console.log(doc);
   console.log(req.body);
 
-  var params = {
-    Bucket: "natalie1234",
-    Key: req.body.path,
-    Expires: 3600
-  };
+  User.findOne({ _id: req.id })
+    .then(doc => {
+      var params = {
+        Bucket: doc.userName,
+        Key: req.body.path,
+        Expires: 3600
+      };
 
-  s3bucket
-    .getSignedUrlPromise("getObject", params)
-    .then(result => {
-      // console.log(result);
-      res.status(200).json({ msg: "linkgenerated", resurl: result });
+      s3bucket
+        .getSignedUrlPromise("getObject", params)
+        .then(result => {
+          // console.log(result);
+          res.status(200).json({ msg: "linkgenerated", resurl: result });
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json({ msg: "error" });
+        });
     })
     .catch(err => {
       console.log(err);
+      console.log(err);
+      res.status(500).json({ msg: "error" });
     });
 };
 
 exports.deletefile = (req, res) => {
-  var params = {
-    Bucket: "natalie1234",
-    Key: req.body.key
-  };
+  // params = { Bucket: "natalie1234", Key: req.body.key };
 
-  params = { Bucket: "natalie1234", Key: req.body.key };
+  User.findOne({ _id: req.id })
+    .then(usrdoc => {
+      var params = {
+        Bucket: usrdoc.userName,
+        Key: req.body.key
+      };
+      s3bucket
+        .getObject(params)
+        .promise()
+        .then(result => {
+          console.log(result.ContentLength);
 
-  s3bucket
-    .getObject(params)
-    .promise()
-    .then(result => {
-      console.log(result.ContentLength);
+          User.findOne({ _id: req.id })
+            .then(doc => {
+              var newstoragespace =
+                parseInt(doc.storageSpace) - parseInt(result.ContentLength);
+              doc.storageSpace = newstoragespace;
+              doc
+                .save()
+                .then(doc2 => {
+                  console.log;
+                  // var promisearr = [
+                  // User.findOneAndUpdate(
+                  //   { _id: req.id },
+                  //   { $pull: { resources: { _id: req.body.contentid } } }
+                  // ),
+                  //   s3bucket.deleteObject(params).promise()
+                  // ];
 
-      User.findOne({ _id: req.id })
-        .then(doc => {
-          var newstoragespace =
-            parseInt(doc.storageSpace) - parseInt(result.ContentLength);
-          doc.storageSpace = newstoragespace;
-          doc
-            .save()
-            .then(doc2 => {
-              console.log;
-              var promisearr = [
-                User.findOneAndUpdate(
-                  { _id: req.id },
-                  { $pull: { resources: { _id: req.body.contentid } } }
-                ),
-                s3bucket.deleteObject(params).promise()
-              ];
+                  s3bucket.deleteObject(params, (err, data) => {
+                    if (err) {
+                      console.log(err);
+                      res.status(404).json({ msg: "errornotfound" });
+                    }
 
-              Promise.all(promisearr)
-                .then(result => {
-                  console.log(result);
-                  res.status(200).json({ msg: "sucsess" });
+                    console.log(data);
+
+                    User.findOneAndUpdate(
+                      { _id: req.id },
+                      { $pull: { resources: { _id: req.body.contentid } } }
+                    )
+                      .then(doc => {
+                        console.log(doc);
+                        res.status(200).json({ msg: "sucsess" });
+                      })
+                      .catch(err => {
+                        console.log(err);
+                      });
+                  });
+
+                  // Promise.all(promisearr)
+                  //   .then(result => {
+                  //     console.log(result);
+                  //     res.status(200).json({ msg: "sucsess" });
+                  //   })
+                  //   .catch(err => {
+                  //     console.log(err);
+                  //     if (err.statusCode === "404") {
+                  //       res.status(404).json({ msg: "errornotfound" });
+                  //     }
+                  //   });
                 })
                 .catch(err => {
                   console.log(err);
+                  res.status(500).json({ msg: "error" });
                 });
             })
             .catch(err => {
               console.log(err);
+              console.log(err);
+              res.status(500).json({ msg: "error" });
             });
         })
         .catch(err => {
+          if (err.statusCode === "404") {
+            res.status(404).json({ msg: "errornotfound" });
+          }
+
           console.log(err);
         });
     })
     .catch(err => {
       console.log(err);
+      res.status(500).json({ msg: "error" });
     });
 
   // .then(result => {

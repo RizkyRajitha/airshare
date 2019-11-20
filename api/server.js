@@ -10,6 +10,7 @@ const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/users");
+const Views = require("./models/views");
 const bp = require("body-parser");
 const jwt = require("jsonwebtoken");
 app.use(cors());
@@ -26,11 +27,11 @@ AWS.config.update({ region: "us-east-2" });
 
 // telegram = '982920318:AAFJanZtcladHlMpt7rELD38dbh6wT91meM'    chait = -363135079
 
-const port = 5000 || process.env.PORT;
+const port = process.env.PORT || 5000;
 
 mongoose.Promise = global.Promise;
 //"mongodb://127.0.0.1:27017/authdb" ||
-const mongodbAPI = require("./config/env").mongodbAPI; //keys.mongouri;
+const mongodbAPI = process.env.mongourl || require("./config/env").mongodbAPI; //keys.mongouri;
 app.use(require("morgan")("dev"));
 
 // const accessToken = require("./config/env").dropboxaccesstoken;
@@ -38,11 +39,11 @@ app.use(require("morgan")("dev"));
 
 // const multer = require("multer");
 
-// app.use(express.static("./build"));
+app.use(express.static("./build"));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+});
 
 var jwthelper = (req, res, next) => {
   console.log("helper .....");
@@ -63,6 +64,23 @@ var jwthelper = (req, res, next) => {
         console.log("helper oK");
         // console.log()
         req.id = decoded.id;
+
+        var ipaddr =
+          req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+        var newview = new Views({
+          route: "default",
+          location: req.originalUrl,
+          time: new Date().toISOString(),
+          ip: ipaddr
+        });
+
+        newview
+          .save()
+          .then(result => {})
+          .catch(err => {
+            console.log(err);
+          });
         next();
       } else {
         return res
@@ -99,6 +117,23 @@ var jwthelpertemp = (req, res, next) => {
         console.log("helper oK");
         // console.log()
         req.id = decoded.id;
+        var ipaddr =
+          req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+        var newview = new Views({
+          route: "temp",
+          location: req.originalUrl,
+          time: new Date().toISOString(),
+          ip: ipaddr
+        });
+
+        newview
+          .save()
+          .then(result => {})
+          .catch(err => {
+            console.log(err);
+          });
+
         next();
       } else {
         return res

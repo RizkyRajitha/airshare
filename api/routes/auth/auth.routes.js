@@ -14,6 +14,8 @@ const telegramtokelogger =
 const telegramchatidlogger =
   process.env.telegramchatidlogger ||
   require("../../config/env").telegramchatidlogger;
+const ipdatakey =
+  process.env.ipdatakey || require("../../config/env").ipdatakey;
 
 const sgMail = require("@sendgrid/mail");
 const jwtsecret =
@@ -44,6 +46,26 @@ exports.login = (req, res) => {
           jwtsecret,
           { expiresIn: "600m" }
         );
+
+        var eventtime = new Date().toLocaleString("en-US", {
+          timeZone: "Asia/Colombo"
+        });
+        var ipaddr =
+          req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+        axios
+          .get(`https://api.ipdata.co/${ipaddr}?api-key=${ipdatakey}`)
+          .then(result => {
+            var text = `Lord rizky , \nyou have a AIRSHARE Login from ${ipaddr} \n${result.data.city}  \n${result.data.region} \n${result.data.country_name} \n${result.data.continent_name} \n${result.data.latitude},${result.data.longitude} on \n${eventtime} `;
+
+            axios
+              .post(
+                `https://api.telegram.org/bot${telegramtokelogger}/sendMessage?chat_id=${telegramchatidlogger}&text=${text}`
+              )
+              .then(message => {})
+              .catch(err => console.log(err));
+          })
+          .catch(err => console.log(err));
 
         res.status(200).json({ msg: "success", token: token });
       } else {
@@ -160,7 +182,7 @@ exports.verifyotp = (req, res) => {
           };
 
           var token = jwt.sign(tokenpayload, jwtsecret, {
-            expiresIn: "1m"
+            expiresIn: "10m"
           });
 
           User.findOneAndUpdate(
@@ -208,7 +230,7 @@ exports.forgotPassword = (req, res) => {
         };
 
         var token = jwt.sign(payload, jwtsecret, {
-          expiresIn: "30m"
+          expiresIn: "10m"
         });
 
         sgMail.setApiKey(sendgridkey);
