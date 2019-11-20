@@ -227,14 +227,14 @@ class Templogin extends Component {
                 <br />
                 <br />
 
-                <div className="input-field">
+                <div className="form-group">
                   <input
                     placeholder="Enter your one time password"
                     id="username"
-                    type="number"
+                    type="text"
                     required
                     onChange={e => this.setState({ otp: e.target.value })}
-                    className="inputforgotpassword"
+                    className="form-control"
                   />
                   {/* <label className="forgotpasswordinputlabel">
                     Enter your one tim epassword

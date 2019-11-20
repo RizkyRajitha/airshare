@@ -35,12 +35,37 @@ class Dashboardlite extends Component {
     newfoldername: "",
     currentpath: "/",
     hideprogressbar: true,
+    fileuploadprogress: 0,
     sessionexptimestamp: "",
-    remain: ""
+    remain: "",
+    allfiles: [],
+    username: "",
+    spaceused: "",
+    isloading: false
   };
 
   componentDidMount() {
     var token = localStorage.getItem("jwtguest");
+    localStorage.removeItem("templogin");
+    localStorage.removeItem("tempotp");
+    var config = {
+      headers: { authorization: token }
+    };
+
+    axios
+      .get("/temp/userdata", config)
+      .then(result => {
+        console.log(result.data);
+        this.setState({
+          username: result.data.name,
+          spaceused: result.data.storage,
+          allfiles: result.data.allfiles
+        });
+      })
+      .catch(err => {
+        this.setState({ isloading: false });
+        console.log(err);
+      });
 
     try {
       var decode = jwt.verify(token, "authdemo");
@@ -92,33 +117,23 @@ class Dashboardlite extends Component {
         alertaction: "danger"
       });
       this.props.history.push("/guestlogin");
-      // setTimeout(() => {
-      //
-      // }, 1000);
     }
-
-    var config = {
-      headers: { authorization: token }
-    };
-
-    var payload = {
-      currentpath: this.state.currentpath
-    };
-
+    this.setState({ isloading: true });
     axios
-      .post("/temp/getfolderinfo", payload, config)
+      .get("/temp/getfolderinfo", config)
       .then(result => {
         console.log(result.data);
-        this.setState({ filedata: result.data });
+        this.setState({ filedata: result.data, isloading: false });
       })
       .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   }
 
   getfolderdata = () => {
     var token = localStorage.getItem("jwtguest");
-
+    this.setState({ isloading: true });
     var config = {
       headers: { authorization: token }
     };
@@ -126,12 +141,35 @@ class Dashboardlite extends Component {
     axios
       .get("/temp/getfolderinfo", config)
       .then(result => {
-        var filedata = [];
         console.log(result.data);
 
-        this.setState({ filedata: filedata });
+        this.setState({ filedata: result.data, isloading: false });
       })
       .catch(err => {
+        this.setState({ isloading: false });
+        console.log(err);
+      });
+  };
+
+  getuserdata = () => {
+    var token = localStorage.getItem("jwtguest");
+
+    var config = {
+      headers: { authorization: token }
+    };
+
+    axios
+      .get("/temp/userdata", config)
+      .then(result => {
+        console.log(result.data);
+        this.setState({
+          username: result.data.name,
+          spaceused: result.data.storage,
+          allfiles: result.data.allfiles
+        });
+      })
+      .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   };
@@ -151,6 +189,7 @@ class Dashboardlite extends Component {
     var payload = {
       path: path
     };
+    this.setState({ isloading: true });
 
     axios
       .post("/temp/gettemplink", payload, config)
@@ -158,6 +197,7 @@ class Dashboardlite extends Component {
         console.log(res.data.url);
         if (res.data.msg === "linkgenerated") {
           this.openPopUp(res.data.resurl);
+          this.setState({ isloading: false });
           // window.open(res.data.resurl);
         }
       })
@@ -166,7 +206,8 @@ class Dashboardlite extends Component {
         this.setState({
           alerthidden: false,
           alertext: "error i dont know  ",
-          alertaction: "danger"
+          alertaction: "danger",
+          isloading: false
         });
       });
   };
@@ -190,42 +231,13 @@ class Dashboardlite extends Component {
     }
   };
 
-  allowaccess = (path, type, allowstate) => {
-    console.log(path);
-
-    console.log(this.state);
-
-    var jwt = localStorage.getItem("jwt");
-    var config = {
-      headers: {
-        authorization: jwt
-      }
-    };
-
-    var payload = {
-      path: path,
-      type: type,
-      setallow: !allowstate
-    };
-
-    axios
-      .post("/api/allowaccess", payload, config)
-      .then(result => {
-        console.log(result.data);
-        this.getfolderdata();
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
-
   fileuploaddindicater = (orisize, eventsize) => {
     this.setState({ hideprogressbar: false });
     console.log(eventsize / orisize);
     var width = (eventsize / orisize) * 100;
-    var elem = document.getElementById("myBar");
-    elem.style.width = width + "%";
-    // var id = setInterval(frame, 10);
+    this.setState({ fileuploadprogress: width });
+    // var elem = document.getElementById("myBar");
+    // elem.style.width = width + "%";
 
     console.log(width);
 
@@ -234,16 +246,51 @@ class Dashboardlite extends Component {
       this.setState({ hideprogressbar: true });
     }
   };
-
   uploadfile = e => {
+    this.setState({
+      alerthidden: true,
+      alertext: "",
+      alertaction: ""
+    });
+
     this.setState({ resobj: e.target.files[0] });
     console.log(e.target.files);
 
-    console.log(this.state.currentpath);
+    // console.log(this.state.currentpath);
 
     const formdata = new FormData();
-    formdata.append("resobj", e.target.files[0]);
-    formdata.append("path", this.state.currentpath);
+    this.setState({ isloading: true });
+    var upname = [];
+    var uploadsize = 0;
+    for (let index = 0; index < e.target.files.length; index++) {
+      const element = e.target.files[index];
+      upname.push(element.name);
+      uploadsize = uploadsize + element.size;
+      formdata.append("resobj", element);
+    }
+    var dups = false;
+
+    var remain = 100 * 1024 * 1024 - this.state.spaceused;
+
+    var dupname = "";
+    console.log(this.state.allfiles, " ", upname);
+
+    this.state.allfiles.forEach(element => {
+      for (let ele2 of upname) {
+        console.log(element, " ", ele2);
+
+        if (element === ele2) {
+          console.log("duplicate uploads");
+          dupname = element;
+          dups = true;
+          break;
+        }
+      }
+    });
+
+    console.log("kokok");
+
+    // formdata.append("path", this.state.currentpath);
     //
     var filesize = e.target.files[0].size;
     var jwt = localStorage.getItem("jwtguest");
@@ -255,36 +302,171 @@ class Dashboardlite extends Component {
         authorization: jwt
       }
     };
-    axios
-      .post("/temp/fileupload", formdata, config)
-      .then(result => {
-        console.log(result.data);
-        if (result.data.msg === "success") {
-          this.getfolderdata();
-          this.setState({
-            alerthidden: false,
-            alertext: "file successfully uploaded",
-            alertaction: "success"
+
+    if (!dups) {
+      if (remain > uploadsize) {
+        console.log("no dups ok!!!!!!");
+        axios
+          .post("/temp/fileupload", formdata, config)
+          .then(result => {
+            console.log(result.data);
+            if (result.data.msg === "success") {
+              this.getfolderdata();
+              this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "file successfully uploaded",
+                alertaction: "success",
+                isloading: false
+              });
+            } else if (result.data.msg === "lowspace") {
+              // this.getfolderdata();
+              // this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "Low space",
+                alertaction: "danger",
+                isloading: false
+              });
+            }
+          })
+          .catch(err => {
+            console.log(err);
           });
-        }
-      })
-      .catch(err => {
-        console.log(err);
+      } else {
+        this.setState({
+          alerthidden: false,
+          alertext: ` Low Space `,
+          alertaction: "danger",
+          isloading: false
+        });
+      }
+    } else {
+      this.setState({
+        alerthidden: false,
+        alertext: `Duplicate files found please remove them and try again  "${dupname}" `,
+        alertaction: "danger",
+        isloading: false
       });
+    }
   };
+
+  // uploadfile = e => {
+  //   this.setState({ resobj: e.target.files[0] });
+  //   console.log(e.target.files);
+
+  //   console.log(this.state.currentpath);
+
+  //   const formdata = new FormData();
+  //   formdata.append("resobj", e.target.files[0]);
+  //   formdata.append("path", this.state.currentpath);
+  //   //
+  //   var filesize = e.target.files[0].size;
+  //   var jwt = localStorage.getItem("jwtguest");
+  //   var config = {
+  //     onUploadProgress: progressEvent =>
+  //       this.fileuploaddindicater(filesize, progressEvent.loaded),
+  //     headers: {
+  //       "content-type": "multipart/form-data",
+  //       authorization: jwt
+  //     }
+  //   };
+  //   axios
+  //     .post("/temp/fileupload", formdata, config)
+  //     .then(result => {
+  //       console.log(result.data);
+  //       if (result.data.msg === "success") {
+  //         this.getfolderdata();
+  //         this.setState({
+  //           alerthidden: false,
+  //           alertext: "file successfully uploaded",
+  //           alertaction: "success"
+  //         });
+  //       }
+  //     })
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // };
 
   render() {
     return (
       <div>
-        <Navbar type="dashboardlite" useractive="true" />
-        <div className="container xl dashboardmain">
+        <Navbar
+          type="dashboardlite"
+          username={this.state.username}
+          useractive="true"
+        />
+        <div className="container ">
           <Altert
             action={this.state.alertaction}
             text={this.state.alertext}
             hiddenalert={this.state.alerthidden}
           />
 
-          <div className="contentdivdashboardlite">
+          <div hidden={this.state.hideprogressbar} class="progress">
+            <div
+              class="progress-bar bg-success"
+              role="progressbar"
+              style={{ width: this.state.fileuploadprogress + "%" }}
+              aria-valuenow="25"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+
+          <div className="dashboardbtngroup">
+            <div>
+              <span>
+                space used : {(this.state.spaceused / 1024 / 1024).toFixed(3)}
+                mb
+              </span>{" "}
+              {console.log(
+                `${this.state.spaceused / (1024 * 1024).toFixed(1)}%`
+              )}
+              <div class="progress">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  style={{
+                    width: `${this.state.spaceused / (1024 * 1024).toFixed(1)}%`
+                  }}
+                  aria-valuenow="25"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+            </div>{" "}
+            <div className="spinnerdashboard">
+              <div
+                hidden={!this.state.isloading}
+                className="spinner-border text-primary"
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+            <div className="timeremain">
+              {" "}
+              Time remaining 💣 : {this.state.remain}
+            </div>
+            <input
+              type="file"
+              name="resobj"
+              onChange={this.uploadfile}
+              className="dashfileinputtemp"
+              id="customFile"
+              multiple
+            />
+            <label
+              class="btn btn-primary fileuploadbtndashlite "
+              for="customFile"
+            >
+              <i class="fas fa-file-upload"></i>
+            </label>
+          </div>
+
+          {/* <div className="contentdivdashboardlite">
             <div className="timeremain">
               {" "}
               Time remaining 💣 : {this.state.remain}
@@ -304,65 +486,56 @@ class Dashboardlite extends Component {
             >
               <i class="fas fa-file-upload"></i>
             </label>
-          </div>
-          <div hidden={this.state.hideprogressbar} id="myProgress">
-            <div id="myBar"></div>
+          </div> */}
+
+          <div className="table-responsive">
+            {" "}
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">item type</th>
+                  <th scope="col">Item Name</th>
+                  <th scope="col">Item last modified</th>
+                  <th scope="col">Item size</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {this.state.filedata.map(ele => {
+                  console.log(ele);
+
+                  return (
+                    <tr>
+                      <td>
+                        <img src="https://img.icons8.com/color/48/000000/file.png"></img>
+                      </td>
+                      <td className="tabledatanamedash">{ele.Key}</td>
+                      <td>
+                        {moments(
+                          ele.LastModified,
+                          "YYYY-MM-DD HH:mm:ssZ"
+                        ).fromNow()}
+                      </td>
+                      <td>{(ele.Size / 1024 / 1024).toFixed(3) + " Mb"}</td>
+                      <td>
+                        {" "}
+                        <button
+                          className="btn btn-primary "
+                          onClick={() => {
+                            this.downloadfile(ele.Key);
+                          }}
+                        >
+                          Download
+                        </button>{" "}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">item type</th>
-                <th scope="col">Item Name</th>
-                <th scope="col">Item last modified</th>
-                <th scope="col">Item size</th>
-                <th scope="col"></th>
-                {/* <th scope="col"></th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.filedata.map(ele => {
-                // console.log(ele);
-
-                return (
-                  <tr>
-                    <td>
-                      <img src="https://img.icons8.com/color/48/000000/file.png"></img>
-                    </td>
-                    <td>{ele.Key}</td>
-                    <td>
-                      {moments(
-                        ele.LastModified,
-                        "YYYY-MM-DD HH:mm:ssZ"
-                      ).fromNow()}
-                    </td>
-                    <td>{(ele.Size / 1024 / 1024).toFixed(2) + " Mb"}</td>
-                    <td>
-                      {" "}
-                      <button
-                        className="btn btn-primary "
-                        onClick={() => {
-                          this.downloadfile(ele.Key);
-                        }}
-                      >
-                        Download
-                      </button>{" "}
-                    </td>
-                    {/* <td>
-                      <button
-                        className="btn btn-primary "
-                        onClick={() => {
-                          this.allowaccess(ele.contentid, ele.allowaccess);
-                        }}
-                      >
-                        {ele.allowaccess ? "revoke " : "allow access"}
-                      </button>{" "}
-                    </td> */}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
           {this.state.filedata.length === 0 ? "No files to show " : ""}
         </div>
       </div>

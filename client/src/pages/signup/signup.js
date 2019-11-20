@@ -4,6 +4,7 @@ import Navbar from "../../components/navbar/navbar";
 import Altert from "../../components/altert";
 import Footer from "../../components/footer/footer";
 import "./signup.css";
+
 const jwt = require("jsonwebtoken");
 class Signup extends Component {
   state = {
@@ -85,7 +86,7 @@ class Signup extends Component {
   chechusername = uname => {
     console.log(uname);
     var usernsmae = new String(uname);
-    if (usernsmae.length < 5) {
+    if (usernsmae.length < 8) {
       this.setState({ unamevlid: false });
     } else {
       // document.getElementById("signupusername").removeAttribute("data-error");
@@ -111,6 +112,12 @@ class Signup extends Component {
       <div className="maindivsignup">
         <Navbar />
         <div className="wrappersignup">
+          {" "}
+          <Altert
+            action={this.state.alertaction}
+            text={this.state.alertext}
+            hiddenalert={this.state.alerthidden}
+          />
           <div className="form-wrappersignup">
             <h2 className="signupheading">Signup</h2>
             <div className="informmsignup">
@@ -219,7 +226,10 @@ class Signup extends Component {
                     <span className="checkterms">
                       {" "}
                       I accept the Terms of Use &{" "}
-                      <a className='privarcypolicyanchor' href="/privacypolicy"> Privacy Policy </a>
+                      <a className="privarcypolicyanchor" href="/privacypolicy">
+                        {" "}
+                        Privacy Policy{" "}
+                      </a>
                     </span>
                   </div>
                 </div>

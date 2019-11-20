@@ -12,6 +12,13 @@ class Landingpage extends Component {
       var decode = jwt.verify(token, "authdemo");
       this.props.history.push("/dashboard");
     } catch (error) {}
+
+    var tokenguest = localStorage.getItem("jwtguest");
+
+    try {
+      var decode = jwt.verify(tokenguest, "authdemo");
+      this.props.history.push("/dashboardlite");
+    } catch (error) {}
   }
 
   render() {

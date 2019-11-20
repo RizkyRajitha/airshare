@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import Altert from "../../components/altert";
 import "./resetpassword.css";
 import axios from "axios";
+import moments from "moment";
 // import Navbar from "../../components/navbar/navbar";
 // import Footer from "../../components/footer/footer";
 const jsonwebtoken = require("jsonwebtoken");
@@ -16,7 +17,8 @@ class Resetpassword extends Component {
     password2: "",
     alerthidden: true,
     alertext: "",
-    alertaction: ""
+    alertaction: "",
+    remain: ""
   };
 
   componentDidMount() {
@@ -29,6 +31,35 @@ class Resetpassword extends Component {
       if (tk) {
         console.log(tk);
         console.log("valid token");
+
+        var date = new Date(tk.exp * 1000);
+
+        var dato = new Date().toUTCString();
+
+        var ddt = moments(date).format("YYYY-MM-DD HH:mm:ss");
+        var ddtas = moments(dato).format("YYYY-MM-DD HH:mm:ss");
+
+        console.log("ddt");
+        console.log(ddt);
+        var stst = moments.utc(
+          moments(ddt).diff(moments(ddtas, "YYYY-MM-DD HH:mm:ss"))
+        );
+
+        var countdown = setInterval(() => {
+          stst.subtract({ second: 1 });
+          this.setState({ remain: stst.format("HH:mm:ss").slice(3, 8) });
+          console.log(stst.format("HH:mm:ss"));
+
+          if (stst.format("HH:mm:ss") === "00:00:00") {
+            this.setState({
+              alerthidden: false,
+              alertext: "please login to continue",
+              alertaction: "danger"
+            });
+            this.props.history.push("/login");
+            clearInterval(countdown);
+          }
+        }, 1000);
       }
     } catch (error) {
       console.log(error);
@@ -75,7 +106,6 @@ class Resetpassword extends Component {
               alertaction: "success"
             });
           } else if (body.msg === "tokendisbled") {
-            
             this.setState({
               alerthidden: false,
               alertext: "this link is disabled",
@@ -120,6 +150,8 @@ class Resetpassword extends Component {
               <h3>Reset your password</h3>
             </div>
 
+            <span>{this.state.remain}</span>
+
             <div className="informmresetpass">
               <br />
 
@@ -128,29 +160,29 @@ class Resetpassword extends Component {
                 <br />
                 <br />
 
-                <div className="input-field">
+                <div className="form-group">
                   <input
                     placeholder="New password"
                     id="pass1"
                     required
                     type="password"
                     name="password"
-                    className="inputlogin"
-                    // minLength="7"
+                    className="form-control"
+                    minLength="7"
                     onChange={e => this.setState({ password1: e.target.value })}
                   />
                   {/* <label className="logininputlabel" for="email">
                     New password
                   </label> */}
                 </div>
-                <div className="input-field">
+                <div className="form-group">
                   <input
                     placeholder="Re enter new password"
                     required
                     id="pass2"
                     type="password"
                     name="pass2"
-                    className="inputlogin"
+                    className="form-control"
                     onChange={e => this.setState({ password2: e.target.value })}
                   />
                   {/* <label className="logininputlabel" for="pass">

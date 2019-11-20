@@ -49,6 +49,9 @@ class Navbar extends Component {
                 className="nav-link"
                 onClick={() => {
                   localStorage.removeItem("jwt");
+                  localStorage.removeItem("jwtguest");
+                  localStorage.removeItem("templogin");
+                  localStorage.removeItem("tempotp");
                   this.props.history.push("/");
                 }}
                 href="#"

@@ -24,13 +24,15 @@
   /* width: 90% !important */
 }
 
+.spinnerdashboard {
+  padding: 9px;
+}
 .dashboardbtngroup {
   display: flex !important;
-  justify-content: flex-end !important;
-  justify-content: space-around !important;
+
+  justify-content: space-around;
   margin-bottom: 1%;
   margin-top: 10%;
-  /* height: 10px */
 }
 
 .dashboardbtncreatefolder {
@@ -101,8 +103,52 @@ i {
   font-size: 1.5rem;
 }
 
+
+@media (min-width: 11350px) {
+  .container {
+    max-width: 1000px;
+  }
+}
+
+
 @media (min-width: 1200px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+@media (min-width: 1300px) {
+  .container {
+    max-width: 1300px;
+  }
+}
+
+@media (min-width: 1400px) {
   .container {
     max-width: 1400px;
   }
 }
+
+@media (min-width: 1500px) {
+  .container {
+    max-width: 1500px;
+  }
+}
+
+@media screen and (max-width: 754px) {
+  .dashboardbtngroup {
+    display: flex !important;
+    flex-direction: column;
+
+    justify-content: space-around !important;
+    margin-bottom: 1%;
+    margin-top: 10%;
+    /* height: 10px */
+  }
+  .spinnerdashboard {
+    padding: 9px;
+    text-align: center;
+  }
+}
+
+/*  */

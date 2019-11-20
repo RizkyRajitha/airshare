@@ -39,7 +39,9 @@ class Dashboard extends Component {
     filenamelist: [],
     username: "",
     spaceused: "",
-    fileuploadprogress: 0
+    fileuploadprogress: 0,
+    deleting: false,
+    isloading: false
   };
 
   componentDidMount() {
@@ -60,7 +62,7 @@ class Dashboard extends Component {
     var config = {
       headers: { authorization: token }
     };
-
+    this.setState({ isloading: true });
     axios
       .get("/api/userdata", config)
       .then(result => {
@@ -85,9 +87,10 @@ class Dashboard extends Component {
           filenames.push(element.Key);
         });
 
-        this.setState({ filenamelist: filenames });
+        this.setState({ filenamelist: filenames, isloading: false });
       })
       .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   }
@@ -98,17 +101,19 @@ class Dashboard extends Component {
     var config = {
       headers: { authorization: token }
     };
-
+    this.setState({ isloading: true });
     axios
       .get("/api/userdata", config)
       .then(result => {
         console.log(result.data);
         this.setState({
           username: result.data.name,
-          spaceused: result.data.storage
+          spaceused: result.data.storage,
+          isloading: false
         });
       })
       .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   };
@@ -119,7 +124,7 @@ class Dashboard extends Component {
     var config = {
       headers: { authorization: token }
     };
-
+    this.setState({ isloading: true });
     axios
       .get("/api/getfolderinfo", config)
       .then(result => {
@@ -131,9 +136,14 @@ class Dashboard extends Component {
           filenames.push(element.Key);
         });
 
-        this.setState({ filedata: result.data, filenamelist: filenames });
+        this.setState({
+          filedata: result.data,
+          filenamelist: filenames,
+          isloading: false
+        });
       })
       .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   };
@@ -153,13 +163,14 @@ class Dashboard extends Component {
     var payload = {
       path: path
     };
-
+    this.setState({ isloading: true });
     axios
       .post("/api/gettemplink", payload, config)
       .then(res => {
         console.log(res.data.url);
         if (res.data.msg === "linkgenerated") {
           this.openPopUp(res.data.resurl);
+          this.setState({ isloading: false });
           // window.open(res.data.resurl);
         }
       })
@@ -168,7 +179,8 @@ class Dashboard extends Component {
         this.setState({
           alerthidden: false,
           alertext: "error i dont know  ",
-          alertaction: "danger"
+          alertaction: "danger",
+          isloading: false
         });
       });
   };
@@ -197,7 +209,7 @@ class Dashboard extends Component {
     console.log(allowstate);
 
     // console.log(this.state);
-
+    this.setState({ isloading: true });
     var jwt = localStorage.getItem("jwt");
     var config = {
       headers: {
@@ -215,9 +227,11 @@ class Dashboard extends Component {
       .then(result => {
         console.log(result.data);
         this.getfolderdata();
+        this.setState({ isloading: false });
         // window.location.reload();
       })
       .catch(err => {
+        this.setState({ isloading: false });
         console.log(err);
       });
   };
@@ -258,6 +272,8 @@ class Dashboard extends Component {
       key: key
     };
 
+    this.setState({ deleting: true });
+    this.setState({ isloading: true });
     axios
       .post("/api/deletefile", payload, config)
       .then(result => {
@@ -267,11 +283,20 @@ class Dashboard extends Component {
         this.setState({
           alerthidden: false,
           alertext: key + " successfully deleted",
-          alertaction: "success"
+          alertaction: "success",
+          isloading: false,
+          deleting: false
         });
       })
       .catch(err => {
         console.log(err);
+        this.setState({
+          alerthidden: false,
+          alertext: key + " Error deleting file",
+          alertaction: "danger",
+          isloading: false,
+          deleting: false
+        });
       });
   };
 
@@ -281,7 +306,7 @@ class Dashboard extends Component {
       alertext: "",
       alertaction: ""
     });
-
+    this.setState({ isloading: true });
     this.setState({ resobj: e.target.files[0] });
     console.log(e.target.files);
 
@@ -290,14 +315,17 @@ class Dashboard extends Component {
     const formdata = new FormData();
 
     var upname = [];
-
+    var uploadsize = 0;
     for (let index = 0; index < e.target.files.length; index++) {
       const element = e.target.files[index];
       upname.push(element.name);
-
+      uploadsize = uploadsize + element.size;
       formdata.append("resobj", element);
     }
     var dups = false;
+
+    var remain = 100 * 1024 * 1024 - this.state.spaceused;
+
     var dupname = "";
     console.log(this.state.filenamelist, " ", upname);
 
@@ -330,37 +358,50 @@ class Dashboard extends Component {
     };
 
     if (!dups) {
-      console.log("no dups ok!!!!!!");
-      axios
-        .post("/upload/uploadfileawss3", formdata, config)
-        .then(result => {
-          console.log(result.data);
-          if (result.data.msg === "success") {
-            this.getfolderdata();
-            this.getuserdata();
-            this.setState({
-              alerthidden: false,
-              alertext: "file successfully uploaded",
-              alertaction: "success"
-            });
-          } else if (result.data.msg === "lowspace") {
-            this.getfolderdata();
-            this.getuserdata();
-            this.setState({
-              alerthidden: false,
-              alertext: "Low space",
-              alertaction: "danger"
-            });
-          }
-        })
-        .catch(err => {
-          console.log(err);
+      if (remain > uploadsize) {
+        console.log("no dups ok!!!!!!");
+        axios
+          .post("/upload/uploadfileawss3", formdata, config)
+          .then(result => {
+            console.log(result.data);
+            if (result.data.msg === "success") {
+              this.getfolderdata();
+              this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "file successfully uploaded",
+                alertaction: "success",
+                isloading: false
+              });
+            } else if (result.data.msg === "lowspace") {
+              this.getfolderdata();
+              this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "Low space",
+                alertaction: "danger",
+                isloading: false
+              });
+            }
+          })
+          .catch(err => {
+            this.setState({ isloading: false });
+            console.log(err);
+          });
+      } else {
+        this.setState({
+          alerthidden: false,
+          alertext: ` Low Space `,
+          alertaction: "danger",
+          isloading: false
         });
+      }
     } else {
       this.setState({
         alerthidden: false,
         alertext: `Duplicate files found please remove them and try again  "${dupname}" `,
-        alertaction: "danger"
+        alertaction: "danger",
+        isloading: false
       });
     }
   };
@@ -391,7 +432,7 @@ class Dashboard extends Component {
             onChange={this.uploadfile}
           /> */}
 
-          <div hidden={this.state.hideprogressbar} class="progress">
+          <div hidden={this.state.hideprogressbar} className="progress">
             <div
               class="progress-bar bg-success"
               role="progressbar"
@@ -425,6 +466,16 @@ class Dashboard extends Component {
                   aria-valuemin="0"
                   aria-valuemax="100"
                 ></div>
+              </div>
+            </div>
+
+            <div className="spinnerdashboard">
+              <div
+                hidden={!this.state.isloading}
+                className="spinner-border text-primary"
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
               </div>
             </div>
 
@@ -476,6 +527,7 @@ class Dashboard extends Component {
                       <td>
                         {" "}
                         <button
+                          disabled={this.state.deleting}
                           className="btn btn-primary "
                           onClick={() => {
                             this.downloadfile(ele.Key);
@@ -486,6 +538,7 @@ class Dashboard extends Component {
                       </td>
                       <td>
                         <button
+                          disabled={this.state.deleting}
                           className={`btn ${
                             ele.allowaccess ? "btn-success" : "btn-warning "
                           } `}
@@ -498,6 +551,7 @@ class Dashboard extends Component {
                       </td>
                       <td>
                         <button
+                          disabled={this.state.deleting}
                           className={`btn btn-danger `}
                           onClick={() => {
                             this.deletefile(ele.contentid, ele.Key);

@@ -34,7 +34,8 @@ class Forgotpassword extends Component {
 
           this.setState({
             alerthidden: false,
-            alertext: "password reset link send successfully",
+            alertext:
+              "password reset link send successfully , This link will only valid for 10 minutes",
             alertaction: "success"
           });
         } else if (result.data.msg === "nouser") {

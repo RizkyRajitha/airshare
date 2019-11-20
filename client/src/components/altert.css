@@ -24,3 +24,15 @@
   background-color: #dbf2e3;
   border-color: #cdedd8;
 }
+
+@media screen and (max-width: 1200px) {
+  .bootsrtapaltert {
+    width: 51%;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .bootsrtapaltert {
+    width: 71%;
+  }
+}
