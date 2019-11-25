@@ -39,12 +39,6 @@ app.use(require("morgan")("dev"));
 
 // const multer = require("multer");
 
-app.use(express.static("./build"));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
-});
-
 var jwthelper = (req, res, next) => {
   console.log("helper .....");
   const token = req.headers.authorization;
@@ -151,6 +145,53 @@ var jwthelpertemp = (req, res, next) => {
   }
 };
 
+app.use("/auth", require("./routes/auth/auth.router")); //dont add jwt middleware
+app.use("/reg", require("./routes/register/register.router")); //dont add jwt middleware
+
+app.use("/api", jwthelper, require("./routes/api/api.router"));
+app.use("/upload", jwthelper, require("./routes/fileuplaod/fileupload.router"));
+
+app.use(
+  "/temp",
+  jwthelpertemp,
+  require("./routes/tempaccess/tempaccess.router")
+);
+
+// app.use(express.static("./build"));
+
+// app.get("*", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+
+app.get("/presigendurltest", (req, res) => {
+  const awskey = process.env.awskey || require("./config/env").awskey;
+  const awsseacret =
+    process.env.awsseacret || require("./config/env").awsseacret;
+
+  let s3bucket = new AWS.S3({
+    accessKeyId: awskey,
+    secretAccessKey: awsseacret
+  });
+
+  var params = {
+    Bucket: "rizkyblog",
+    Key: "heroku.md",
+    Expires: 600,
+    ContentType: ""
+  };
+
+  s3bucket
+    .getSignedUrlPromise("putObject", params)
+    .then(result => {
+      console.log(result);
+      res.status(200).json({ msg: "linkgenerated", resurl: result });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ msg: "error" });
+    });
+});
+
 // var jwthelperadmin = (req, res, next) => {
 //   console.log("helper .....");
 //   const token = req.headers.authorization;
@@ -187,18 +228,6 @@ var jwthelpertemp = (req, res, next) => {
 //     });
 //   }
 // };
-
-app.use("/auth", require("./routes/auth/auth.router")); //dont add jwt middleware
-app.use("/reg", require("./routes/register/register.router")); //dont add jwt middleware
-
-app.use("/api", jwthelper, require("./routes/api/api.router"));
-app.use("/upload", jwthelper, require("./routes/fileuplaod/fileupload.router"));
-
-app.use(
-  "/temp",
-  jwthelpertemp,
-  require("./routes/tempaccess/tempaccess.router")
-);
 
 // app.get("/", (req, res) => {
 // from: "+12512610310",

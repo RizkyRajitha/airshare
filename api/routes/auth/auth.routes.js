@@ -47,26 +47,6 @@ exports.login = (req, res) => {
           { expiresIn: "600m" }
         );
 
-        var eventtime = new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Colombo"
-        });
-        var ipaddr =
-          req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-
-        axios
-          .get(`https://api.ipdata.co/${ipaddr}?api-key=${ipdatakey}`)
-          .then(result => {
-            var text = `Lord rizky , \nyou have a AIRSHARE Login from ${ipaddr} \n${result.data.city}  \n${result.data.region} \n${result.data.country_name} \n${result.data.continent_name} \n${result.data.latitude},${result.data.longitude} on \n${eventtime} `;
-
-            axios
-              .post(
-                `https://api.telegram.org/bot${telegramtokelogger}/sendMessage?chat_id=${telegramchatidlogger}&text=${text}`
-              )
-              .then(message => {})
-              .catch(err => console.log(err));
-          })
-          .catch(err => console.log(err));
-
         res.status(200).json({ msg: "success", token: token });
       } else {
         res.status(401).json({ msg: "invalidcredentials" });
