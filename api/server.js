@@ -25,7 +25,7 @@ const jwtsecret = require("./config/env").jwtsecret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 
-// telegram = '982920318:AAFJanZtcladHlMpt7rELD38dbh6wT91meM'    chait = -363135079
+//
 
 const port = process.env.PORT || 5000;
 
@@ -174,7 +174,7 @@ app.get("/presigendurltest", (req, res) => {
   });
 
   var params = {
-    Bucket: "rizkyblog",
+    Bucket: "2222",
     Key: "heroku.md",
     Expires: 600,
     ContentType: ""
@@ -230,14 +230,14 @@ app.get("/presigendurltest", (req, res) => {
 // };
 
 // app.get("/", (req, res) => {
-// from: "+12512610310",
-// to: "+94765628312"
+// from: "+333333333",
+// to: "+*********"
 
 // twillioclient.messages
 //   .create({
-//     from: "whatsapp:+14155238886",
+//     from: "whatsapp:+33333333333",
 //     body: "Hello there!",
-//     to: "whatsapp:+94765628312"
+//     to: "whatsapp:+************"
 //   })
 //   .then(message => console.log(message.sid))
 //   .catch(err => {
@@ -268,8 +268,8 @@ app.get("/presigendurltest", (req, res) => {
 // twillioclient.messages
 //   .create({
 //     body: "This is the ship that made the Kessel Run in fourteen parsecs?",
-//     from: "+12512610310",
-//     to: "+94765628312"
+//     from: "+333333333333",
+//     to: "+**********"
 //   })
 //   .then(message => console.log(message.sid));
 
@@ -324,7 +324,7 @@ const fileup = multer({ storage: storage });
 //   );
 
 //   // var params = {
-//   //   Bucket: "rajitha1234",
+//   //   Bucket: "4444",
 //   //   Key: req.files[0].originalname,
 //   //   Body: req.files[0].buffer
 //   // };
