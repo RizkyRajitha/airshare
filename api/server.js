@@ -39,11 +39,11 @@ app.use(require("morgan")("dev"));
 
 // const multer = require("multer");
 
-app.use(express.static("./build"));
+// app.use(express.static("./build"));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
 
 var jwthelper = (req, res, next) => {
   console.log("helper .....");
@@ -199,6 +199,59 @@ app.use(
   jwthelpertemp,
   require("./routes/tempaccess/tempaccess.router")
 );
+
+app.post("/presigendurltest", (req, res) => {
+  console.log(req.body);
+  var params = {
+    Bucket: "rizky123",
+    Key: req.body.name,
+    Expires: 3600,
+    ContentType: req.body.type
+  };
+  let s3bucket = new AWS.S3({
+    accessKeyId: awskey,
+    secretAccessKey: awsseacret
+    // Bucket: BUCKET_NAME
+  });
+
+  var thisConfig = {
+    AllowedHeaders: ["*"],
+    AllowedMethods: ["PUT"],
+    AllowedOrigins: ["*"],
+    ExposeHeaders: [],
+    MaxAgeSeconds: 3000
+  };
+
+  var corsRules = new Array(thisConfig);
+
+  // Create CORS params
+  var corsParams = {
+    Bucket: "rizky123",
+    CORSConfiguration: { CORSRules: corsRules }
+  };
+
+  // set the new CORS configuration on the selected bucket
+
+  // s3bucket
+  //   .putBucketCors(corsParams)
+  //   .promise()
+  //   .then(result => {
+  //     console.log(result);
+  s3bucket
+    .getSignedUrlPromise("putObject", params)
+    .then(result => {
+      // console.log(result);
+      res.status(200).json({ msg: "linkgenerated", resurl: result });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ msg: "error" });
+    });
+  // })
+  // .catch(err => {
+  //   console.log(err);
+  // });
+});
 
 // app.get("/", (req, res) => {
 // from: "+12512610310",

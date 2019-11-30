@@ -41,7 +41,8 @@ class Dashboard extends Component {
     spaceused: "",
     fileuploadprogress: 0,
     deleting: false,
-    isloading: false
+    isloading: false,
+    resobjsize: ""
   };
 
   componentDidMount() {
@@ -300,6 +301,59 @@ class Dashboard extends Component {
       });
   };
 
+  presigendurltest = e => {
+    this.setState({
+      alerthidden: true,
+      alertext: "",
+      alertaction: ""
+    });
+    this.setState({ isloading: true });
+    this.setState({ resobj: e.target.files[0] });
+    this.setState({ resobjsize: e.target.files[0].size });
+
+    console.log(e.target.files);
+
+    var payload = {
+      name: e.target.files[0].name,
+      size: e.target.files[0].size,
+      type: e.target.files[0].type
+    };
+    console.log(payload);
+    // formdata.append("resobj", e.target.files[0]);
+
+    // console.log("no dups ok!!!!!!");
+
+    var config = {
+      onUploadProgress: progressEvent =>
+        this.fileuploaddindicater(this.state.resobjsize, progressEvent.loaded),
+      headers: {
+        "Content-Type": e.target.files[0].type
+      }
+    };
+
+    axios
+      .post("/presigendurltest", payload)
+      .then(result => {
+        console.log(result.data);
+
+        axios
+          .put(result.data.resurl, this.state.resobj, config)
+          .then(result2 => {
+            console.log(result2);
+            this.setState({
+              alerthidden: false,
+              alertext: "file successfully uploaded",
+              alertaction: "success",
+              isloading: true
+            });
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      })
+      .catch(err => console.log(err));
+  };
+
   uploadfile = e => {
     this.setState({
       alerthidden: true,
@@ -484,7 +538,7 @@ class Dashboard extends Component {
             <input
               type="file"
               name="resobj"
-              onChange={this.uploadfile}
+              onChange={this.presigendurltest}
               class="dashfileinput"
               id="customFile"
               multiple
