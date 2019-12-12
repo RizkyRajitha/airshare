@@ -28,6 +28,8 @@ router.post(
   fileuploadroutes.fileuploadmanaged
 );
 
+router.post("/presigendurlupload", fileuploadroutes.presigendurlupload);
+
 // router.post(
 //   "/uploadfilesession",
 //   fileup.single("resobj"),

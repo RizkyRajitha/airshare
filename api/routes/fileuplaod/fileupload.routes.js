@@ -127,6 +127,130 @@ exports.fileuploadawss3 = (req, res) => {
     });
 };
 
+exports.presigendurlupload = (req, res) => {
+  console.log(req.body);
+
+  var files = req.body.fileset;
+  console.log(files);
+
+  User.findOne({ _id: req.id })
+    .then(usrdoc => {
+      console.log("s3 presignurl");
+      let s3bucket = new AWS.S3({
+        accessKeyId: awskey,
+        secretAccessKey: awsseacret
+        // Bucket: BUCKET_NAME
+      });
+      //     // s3bucket
+      //     //   .getSignedUrlPromise("putObject", params)
+      //     //   .then(result => {
+      //     //     // console.log(result);
+      //     //     res.status(200).json({ msg: "linkgenerated", resurl: result });
+      //     //   })
+      //     //   .catch(err => {
+      //     //     console.log(err);
+      //     //     res.status(500).json({ msg: "error" });
+      //     //   });
+      var promisarr = [];
+      function multiplefiles3presigedurl(resobj) {
+        console.log(resobj.name);
+
+        var contendis = 'attachment; filename="' + resobj.name + '"';
+        console.log(contendis);
+
+        var params = {
+          Bucket: usrdoc.userName,
+          Key: resobj.name,
+          ContentType: resobj.type,
+          ContentDisposition: contendis,
+          Expires: 3600
+        };
+        return s3bucket.getSignedUrlPromise("putObject", params);
+      }
+      var uploadsize = 0;
+      files.map(file => {
+        uploadsize = uploadsize + file.size;
+        promisarr.push(multiplefiles3presigedurl(file));
+      });
+      User.findOne({ _id: req.id })
+        .then(doc => {
+          console.log(parseInt(doc.storageSpace));
+          var remainspace = 100 * 1024 * 1024 - parseInt(doc.storageSpace);
+          console.log("remain space ", remainspace);
+          console.log("upload size  ", uploadsize);
+          if (remainspace > uploadsize) {
+            console.log("go........");
+            console.log(promisarr);
+            var newstorage = parseInt(doc.storageSpace) + parseInt(uploadsize);
+            console.log(newstorage);
+            Promise.all(promisarr)
+              .then(singedurlarray => {
+                console.log(singedurlarray);
+                var dbpromisarr = [];
+                files.forEach(element => {
+                  dbpromisarr.push(
+                    User.findOneAndUpdate(
+                      { _id: req.id },
+                      {
+                        $push: {
+                          resources: {
+                            name: element.name, //file name
+                            size: element.size, // file path
+                            // contenthash: element.ETag,
+                            type: "file", //file or a folder
+                            created: new Date().toISOString() //timestamp
+                          }
+                        }
+                      }
+                    )
+                  );
+                }); //handled poorly
+                Promise.all(dbpromisarr)
+                  .then(dbdocs => {
+                    console.log(dbdocs);
+                    User.findOneAndUpdate(
+                      { _id: req.id },
+                      {
+                        $set: {
+                          storageSpace: newstorage
+                        }
+                      }
+                    )
+                      .then(docup => {
+                        console.log(docup);
+                        res
+                          .status(200)
+                          .json({ urlarr: singedurlarray, msg: "success" });
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        res.status(200).json({ msg: "error" });
+                      });
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    res.status(200).json({ msg: "error" });
+                  });
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          } else {
+            res.status(200).json({ msg: "lowspace" });
+            console.log("limit off");
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json({ msg: "error" });
+        });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ msg: "error" });
+    });
+};
+
 /**
  * 
  * 

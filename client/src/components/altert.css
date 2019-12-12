@@ -11,6 +11,7 @@
   width: 21%;
   text-align: center;
   margin: 0 auto;
+  animation: swipdown 2.5s forwards;
 }
 
 .danger {
@@ -23,6 +24,27 @@
   color: #28623c;
   background-color: #dbf2e3;
   border-color: #cdedd8;
+}
+
+@keyframes swipdown {
+  0% {
+    opacity: 0;
+    transform: translateY(-200px);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-200px);
+  } 
 }
 
 @media screen and (max-width: 1200px) {

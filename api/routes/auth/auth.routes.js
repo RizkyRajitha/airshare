@@ -1,5 +1,3 @@
-// const Nexmo = require("nexmo");
-
 const apiurl = process.env.apiurl || require("../../config/env").api;
 const sendgridkey =
   process.env.sendgridkey || require("../../config/env").sendgridkey;
@@ -8,15 +6,6 @@ const telegramtoke =
 const telegramchatid =
   process.env.telegramchatid || require("../../config/env").telegramchatid;
 
-const telegramtokelogger =
-  process.env.telegramtokelogger ||
-  require("../../config/env").telegramtokelogger;
-const telegramchatidlogger =
-  process.env.telegramchatidlogger ||
-  require("../../config/env").telegramchatidlogger;
-const ipdatakey =
-  process.env.ipdatakey || require("../../config/env").ipdatakey;
-
 const sgMail = require("@sendgrid/mail");
 const jwtsecret =
   process.env.jwtsecret || require("../../config/env").jwtsecret;
@@ -24,6 +13,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/users");
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
+
+const util = require("../../config/util");
 
 exports.login = (req, res) => {
   console.log(req.body);
@@ -47,25 +38,9 @@ exports.login = (req, res) => {
           { expiresIn: "600m" }
         );
 
-        var eventtime = new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Colombo"
-        });
-        var ipaddr =
-          req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-
-        // axios
-        //   .get(`https://api.ipdata.co/${ipaddr}?api-key=${ipdatakey}`)
-        //   .then(result => {
-        //     var text = `Lord rizky , \nyou have a AIRSHARE Login from ${ipaddr} \n${result.data.city}  \n${result.data.region} \n${result.data.country_name} \n${result.data.continent_name} \n${result.data.latitude},${result.data.longitude} on \n${eventtime} `;
-
-        //     axios
-        //       .post(
-        //         `https://api.telegram.org/bot${telegramtokelogger}/sendMessage?chat_id=${telegramchatidlogger}&text=${text}`
-        //       )
-        //       .then(message => {})
-        //       .catch(err => console.log(err));
-        //   })
-        //   .catch(err => console.log(err));
+        if (process.env.NODE_ENV === "production") {
+          util.utilfunc(req);
+        }
 
         res.status(200).json({ msg: "success", token: token });
       } else {
@@ -132,6 +107,10 @@ exports.requestotp = (req, res) => {
                 var token = jwt.sign(jwtpayload, jwtsecret, {
                   expiresIn: "1m"
                 });
+
+                if (process.env.NODE_ENV === "production") {
+                  util.utilfunc(req);
+                }
 
                 res.status(200).json({ msg: "otpsend", token: token });
               });

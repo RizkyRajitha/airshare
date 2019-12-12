@@ -1,12 +1,13 @@
-var fetch = require("isomorphic-fetch");
-var Dropbox = require("dropbox").Dropbox;
-
 const express = require("express");
 const axios = require("axios");
 const app = express();
+
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
+
 const fs = require("fs");
 const path = require("path");
-
+const Sharecode = require("./models/sharecodes");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/users");
@@ -17,6 +18,9 @@ app.use(cors());
 app.use(bp.urlencoded({ extended: false }));
 app.use(bp.json());
 app.use(require("morgan")("dev"));
+
+app.set("view engine", "ejs");
+
 const jwtsecret = require("./config/env").jwtsecret;
 // const accountSid = require("./config/env").twilliosid;
 // const authToken = require("./config/env").twilliotoken;
@@ -25,6 +29,13 @@ const jwtsecret = require("./config/env").jwtsecret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 
+const awskey = process.env.awskey || require("./config/env").awskey;
+const awsseacret = process.env.awsseacret || require("./config/env").awsseacret;
+
+let s3bucket = new AWS.S3({
+  accessKeyId: awskey,
+  secretAccessKey: awsseacret
+});
 // telegram = '982920318:AAFJanZtcladHlMpt7rELD38dbh6wT91meM'    chait = -363135079
 
 const port = process.env.PORT || 5000;
@@ -188,6 +199,95 @@ var jwthelpertemp = (req, res, next) => {
 //   }
 // };
 
+app.use(express.static("./views/pages"));
+
+app.get("/share/:sharecode", function(req, res) {
+  // console.log(sharecode);
+  console.log(req.params.sharecode);
+  console.log("shareeeeeeeeeeeee");
+
+  Sharecode.findOne({ code: req.params.sharecode })
+    .then(sharecodedoc => {
+      console.log(sharecodedoc);
+
+      if (sharecodedoc) {
+        var then = new Date(sharecodedoc.createdAt).getTime();
+        var diff = Math.floor((new Date().getTime() - then) / 1000);
+
+        if (diff < 604700) {
+          console.log("\n\nServing from DB \n\n");
+
+          res.render("pages/share", {
+            size: sharecodedoc.size,
+            title: sharecodedoc.key,
+            username: sharecodedoc.username,
+            resurl: sharecodedoc.awsurl
+          });
+
+          // res.status(200).json({
+          //   msg: "linkgenerated",
+          //   resurl: `${apiurl}share/${sharecodedoc.code}`
+          // });
+        } else {
+          console.log("\n link expired from DB , updating link.... \n\n");
+          var params = {
+            Bucket: sharecodedoc.username,
+            Key: sharecodedoc.key,
+            Expires: 604800 //604800
+          };
+
+          s3bucket
+            .getSignedUrlPromise("getObject", params)
+            .then(result => {
+              // console.log(result);
+
+              sharecodedoc.awsurl = result;
+              sharecodedoc.createdAt = new Date();
+
+              sharecodedoc
+                .save()
+                .then(savedoc => {
+                  console.log("new url updated");
+
+                  res.render("pages/share", {
+                    size: sharecodedoc.size,
+                    title: sharecodedoc.key,
+                    username: sharecodedoc.username,
+                    resurl: sharecodedoc.result
+                  });
+
+                  // res.status(200).json({
+                  //   msg: "linkgenerated",
+                  //   resurl: `${apiurl}share/${sharecodedoc.code}`
+                  // });
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            })
+            .catch(err => {
+              console.log(err);
+              res.status(500).json({ msg: "error" });
+            });
+        }
+      } else {
+        res.render("pages/share", {
+          size: "Nan",
+          title: "error file not found",
+          username: "",
+          resurl: "0"
+        });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    });
+
+  // console.log(result);
+
+  // res.status(200).json({ msg: "linkgenerated", resurl: result });
+});
+
 app.use("/auth", require("./routes/auth/auth.router")); //dont add jwt middleware
 app.use("/reg", require("./routes/register/register.router")); //dont add jwt middleware
 
@@ -200,53 +300,82 @@ app.use(
   require("./routes/tempaccess/tempaccess.router")
 );
 
-app.post("/presigendurltest", (req, res) => {
-  console.log(req.body);
-  var params = {
-    Bucket: "rizky123",
-    Key: req.body.name,
-    Expires: 3600,
-    ContentType: req.body.type
-  };
-  let s3bucket = new AWS.S3({
-    accessKeyId: awskey,
-    secretAccessKey: awsseacret
-    // Bucket: BUCKET_NAME
+// app.use()
+
+app.use(express.static("./build"));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+});
+
+io.on("connection", sock => {
+  console.log("user connected");
+  sock.on("disconnect", () => {
+    console.log("user disconnected");
   });
 
-  var thisConfig = {
-    AllowedHeaders: ["*"],
-    AllowedMethods: ["PUT"],
-    AllowedOrigins: ["*"],
-    ExposeHeaders: [],
-    MaxAgeSeconds: 3000
-  };
+  sock.on("remotecopynew", data => {
+    console.log(data);
+    sock.broadcast.emit("remotecopyclient" + data.uid, data);
+    // io.emit("remotecopyclient" + data.uid, data);
+  });
 
-  var corsRules = new Array(thisConfig);
+  sock.on("newfileupload", data => {
+    console.log(data);
+    console.log("new file upload");
+    sock.broadcast.emit("filechange" + data.id, {});
+    // io.emit("remotecopyclient" + data.uid, data);
+  });
+});
 
+module.exports.wsfunc = (event, data) => {
+  console.log("new " + event);
+  io.emit(event, data);
+};
+
+app.post("/presigendurltest", (req, res) => {
+  console.log("yeehaa");
+  // console.log(req.body);
+  // var params = {
+  //   Bucket: "rizky123",
+  //   Key: req.body.name,
+  //   Expires: 3600,
+  //   ContentType: req.body.type
+  // };
+  // let s3bucket = new AWS.S3({
+  //   accessKeyId: awskey,
+  //   secretAccessKey: awsseacret
+  //   // Bucket: BUCKET_NAME
+  // });
+  // var thisConfig = {
+  //   AllowedHeaders: ["*"],
+  //   AllowedMethods: ["PUT"],
+  //   AllowedOrigins: ["*"],
+  //   ExposeHeaders: [],
+  //   MaxAgeSeconds: 3000
+  // };
+  // var corsRules = new Array(thisConfig);
   // Create CORS params
-  var corsParams = {
-    Bucket: "rizky123",
-    CORSConfiguration: { CORSRules: corsRules }
-  };
-
+  // var corsParams = {
+  //   Bucket: "rizky123",
+  //   CORSConfiguration: { CORSRules: corsRules }
+  // };
   // set the new CORS configuration on the selected bucket
-
   // s3bucket
   //   .putBucketCors(corsParams)
   //   .promise()
   //   .then(result => {
   //     console.log(result);
-  s3bucket
-    .getSignedUrlPromise("putObject", params)
-    .then(result => {
-      // console.log(result);
-      res.status(200).json({ msg: "linkgenerated", resurl: result });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ msg: "error" });
-    });
+  // s3bucket
+  //   .getSignedUrlPromise("putObject", params)
+  //   .then(result => {
+  //     // console.log(result);
+  //     res.status(200).json({ msg: "linkgenerated", resurl: result });
+  //   })
+  //   .catch(err => {
+  //     console.log(err);
+  //     res.status(500).json({ msg: "error" });
+  //   });
   // })
   // .catch(err => {
   //   console.log(err);
@@ -255,13 +384,13 @@ app.post("/presigendurltest", (req, res) => {
 
 // app.get("/", (req, res) => {
 // from: "+12512610310",
-// to: "+94765628312"
+// to: "+"
 
 // twillioclient.messages
 //   .create({
 //     from: "whatsapp:+14155238886",
 //     body: "Hello there!",
-//     to: "whatsapp:+94765628312"
+//     to: "whatsapp:+"
 //   })
 //   .then(message => console.log(message.sid))
 //   .catch(err => {
@@ -293,109 +422,9 @@ app.post("/presigendurltest", (req, res) => {
 //   .create({
 //     body: "This is the ship that made the Kessel Run in fourteen parsecs?",
 //     from: "+12512610310",
-//     to: "+94765628312"
+//     to: "+"
 //   })
 //   .then(message => console.log(message.sid));
-
-// dbx
-//   .filesListFolder({ path: "/new folder (2)/scripts" })
-//   .then(function(response) {
-//     console.log(response);
-
-//     res.json(response);
-//   })
-//   .catch(function(error) {
-//     console.log(error);
-//   });
-// });
-
-const awskey = require("./config/env").awskey;
-const awsseacret = require("./config/env").awsseacret;
-
-const multer = require("multer");
-
-var storage = multer.memoryStorage();
-
-const fileup = multer({ storage: storage });
-
-// app.get("/", fileup.array("resobj"), (req, res) => {
-//   console.log(req.files);
-
-//   console.log("s3");
-
-// let s3bucket = new AWS.S3({
-//   accessKeyId: awskey,
-//   secretAccessKey: awsseacret
-//   // Bucket: BUCKET_NAME
-// });
-
-//   s3bucket.getSignedUrl(
-// "getObject",
-// {
-//   Bucket: "rajitha1234",
-//   Key:
-//     "newitens/",
-//   Expires: 3600
-// },
-//     (err, url) => {
-//       if (err) {
-//         console.log("Error", err);
-//       } else {
-//         res.send(url);
-//         console.log("Success", url);
-//       }
-//     }
-//   );
-
-//   // var params = {
-//   //   Bucket: "rajitha1234",
-//   //   Key: req.files[0].originalname,
-//   //   Body: req.files[0].buffer
-//   // };
-//   // s3bucket.upload(params, function(err, data) {
-//   // if (err) {
-//   //   console.log("Error", err);
-//   // } else {
-//   //   console.log("Success", data);
-//   // }
-//   // });
-//   // Call S3 to list the buckets
-//   // s3bucket.listBuckets(function(err, data) {
-//   // if (err) {
-//   //   console.log("Error", err);
-//   // } else {
-//   //   console.log("Success", data.Buckets);
-//   // }
-//   // });
-
-//   // s3bucket.createBucket({ Bucket: "rajitha1234" }, (err, data) => {
-//   //   if (err) {
-//   //     console.log(err);
-//   //   }
-
-//   //   console.log(data);
-//   // });
-// });
-
-app.get("/down", (req, res) => {
-  console.log("info");
-
-  // dbx
-  //   .filesDownloadZip({ path: "/new folder (2)" })
-  //   .then(function(response) {
-  //     console.log(response.fileBinary);
-
-  //     fs.writeFileSync(`qwqwqw.zip`, response.fileBinary, function(error) {
-  //       if (error) {
-  //         console.error(error);
-  //       }
-  //     });
-  //     res.json(response);
-  //   })
-  //   .catch(function(error) {
-  //     console.log(error);
-  //   });
-});
 
 try {
   mongoose.connect(
@@ -409,6 +438,10 @@ try {
   console.log(err);
 }
 
-app.listen(port, () => {
-  console.log("listsing on " + port);
+http.listen(port, () => {
+  console.log("listning on " + port);
 });
+
+// app.listen(port, () => {
+//   console.log("listsing on " + port);
+// });

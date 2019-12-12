@@ -28,7 +28,8 @@ exports.getuserdata = (req, res) => {
       var payload = {
         name: doc.firstName + " " + doc.lastName,
         storage: doc.storageSpace,
-        allfiles: allfiles
+        allfiles: allfiles,
+        id: doc._id
       };
       res.status(200).json(payload);
     })
@@ -95,45 +96,15 @@ exports.getfolderinfo = (req, res) => {
 
   User.findOne({ _id: req.id })
     .then(doc => {
-      var params = {
-        Bucket: doc.userName
-      };
-      var promisarr = [];
-      promisarr.push(s3bucket.listObjectsV2(params).promise());
-      promisarr.push(User.findOne({ _id: req.id }));
-
       var payload = [];
 
-      Promise.all(promisarr)
-        .then(result => {
-          console.log();
-          console.log(result[1].resources);
+      doc.resources.forEach(element => {
+        if (element.allowaccess) {
+          payload.push(element);
+        }
+      });
 
-          result[0].Contents.forEach(element1 => {
-            result[1].resources.forEach(element2 => {
-              if (element2.allowaccess) {
-                if (element1.Key === element2.name) {
-                  element1.allowaccess = element2.allowaccess;
-                  payload.push(element1);
-                }
-              }
-            });
-          });
-
-          console.log(payload);
-
-          res.status(200).json(payload);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-      // .then(result => {
-      //   console.log(result.Contents);
-      //   res.json(result);
-      // })
-      // .catch(err => {
-      //  console.log(err);
-      // });
+      res.status(200).json(payload);
     })
     .catch(err => {
       console.log(err);
@@ -169,35 +140,45 @@ exports.gettemplink = (req, res) => {
 };
 
 exports.fileuploads3 = (req, res) => {
-  console.log(req.files);
-  var files = req.files;
-  console.log("s3");
+  console.log(req.body);
 
-  let s3bucket = new AWS.S3({
-    accessKeyId: awskey,
-    secretAccessKey: awsseacret
-    // Bucket: BUCKET_NAME
-  });
+  var files = req.body.fileset;
+  console.log(files);
 
   User.findOne({ _id: req.id })
-    .then(userdoc => {
+    .then(usrdoc => {
+      console.log("s3 presignurl");
+      let s3bucket = new AWS.S3({
+        accessKeyId: awskey,
+        secretAccessKey: awsseacret
+        // Bucket: BUCKET_NAME
+      });
+      //     // s3bucket
+      //     //   .getSignedUrlPromise("putObject", params)
+      //     //   .then(result => {
+      //     //     // console.log(result);
+      //     //     res.status(200).json({ msg: "linkgenerated", resurl: result });
+      //     //   })
+      //     //   .catch(err => {
+      //     //     console.log(err);
+      //     //     res.status(500).json({ msg: "error" });
+      //     //   });
       var promisarr = [];
-      function multiplefiles3(resobj) {
-        console.log(resobj.originalname);
+      function multiplefiles3presigedurl(resobj) {
+        console.log(resobj.name);
         var params = {
-          Bucket: userdoc.userName,
-          Key: resobj.originalname,
-          Body: resobj.buffer
+          Bucket: usrdoc.userName,
+          Key: resobj.name,
+          ContentType: resobj.type,
+          Expires: 3600
         };
-        return s3bucket.upload(params).promise();
+        return s3bucket.getSignedUrlPromise("putObject", params);
       }
-
       var uploadsize = 0;
       files.map(file => {
         uploadsize = uploadsize + file.size;
-        promisarr.push(multiplefiles3(file));
+        promisarr.push(multiplefiles3presigedurl(file));
       });
-
       User.findOne({ _id: req.id })
         .then(doc => {
           console.log(parseInt(doc.storageSpace));
@@ -206,24 +187,23 @@ exports.fileuploads3 = (req, res) => {
           console.log("upload size  ", uploadsize);
           if (remainspace > uploadsize) {
             console.log("go........");
+            console.log(promisarr);
             var newstorage = parseInt(doc.storageSpace) + parseInt(uploadsize);
             console.log(newstorage);
             Promise.all(promisarr)
-              .then(result => {
-                console.log(result);
-
+              .then(singedurlarray => {
+                console.log(singedurlarray);
                 var dbpromisarr = [];
-
-                result.forEach(element => {
+                files.forEach(element => {
                   dbpromisarr.push(
                     User.findOneAndUpdate(
                       { _id: req.id },
                       {
                         $push: {
                           resources: {
-                            name: element.Key, //file name
-                            allowaccess: true,
-                            contenthash: element.ETag,
+                            name: element.name, //file name
+                            size: element.size, // file path
+                            allowaccess: true, // contenthash: element.ETag,
                             type: "file", //file or a folder
                             created: new Date().toISOString() //timestamp
                           }
@@ -232,10 +212,9 @@ exports.fileuploads3 = (req, res) => {
                     )
                   );
                 }); //handled poorly
-
                 Promise.all(dbpromisarr)
-                  .then(result => {
-                    console.log(result);
+                  .then(dbdocs => {
+                    console.log(dbdocs);
                     User.findOneAndUpdate(
                       { _id: req.id },
                       {
@@ -246,7 +225,9 @@ exports.fileuploads3 = (req, res) => {
                     )
                       .then(docup => {
                         console.log(docup);
-                        res.status(200).json({ msg: "success" });
+                        res
+                          .status(200)
+                          .json({ urlarr: singedurlarray, msg: "success" });
                       })
                       .catch(err => {
                         console.log(err);
@@ -267,8 +248,8 @@ exports.fileuploads3 = (req, res) => {
           }
         })
         .catch(err => {
-          res.status(500).json({ msg: "error" });
           console.log(err);
+          res.status(500).json({ msg: "error" });
         });
     })
     .catch(err => {

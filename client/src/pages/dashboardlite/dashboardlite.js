@@ -3,29 +3,23 @@ import axios from "axios";
 import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
 import "./dashboardlite.css";
-import Modal from "react-modal";
 import moments from "moment";
-var FileDownload = require("js-file-download");
+
+import Modal from "react-responsive-modal";
+import io from "socket.io-client";
+import {
+  remotecopyclientfunction,
+  remoteuploadclientfunction
+} from "./remotecopy";
 const jwt = require("jsonwebtoken");
 
-const customStyles = {
-  content: {
-    width: "40%",
-    height: "50%",
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)"
-  }
-};
+const api = "http://127.0.0.1:5000";
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
-Modal.setAppElement("#root");
 
 class Dashboardlite extends Component {
   state = {
+    id: "",
     filedata: [],
     alerthidden: true,
     alertext: "",
@@ -43,7 +37,12 @@ class Dashboardlite extends Component {
     spaceused: "",
     isloading: false
   };
-
+  openModel = () => {
+    this.setState({ modelopen: true });
+  };
+  closeModel = () => {
+    this.setState({ modelopen: false });
+  };
   componentDidMount() {
     var token = localStorage.getItem("jwtguest");
     localStorage.removeItem("templogin");
@@ -52,6 +51,11 @@ class Dashboardlite extends Component {
       headers: { authorization: token }
     };
 
+    const socket = io(api, {
+      transports: ["websocket"],
+      upgrade: false
+    });
+
     axios
       .get("/temp/userdata", config)
       .then(result => {
@@ -59,7 +63,20 @@ class Dashboardlite extends Component {
         this.setState({
           username: result.data.name,
           spaceused: result.data.storage,
-          allfiles: result.data.allfiles
+          allfiles: result.data.allfiles,
+          id: result.data.id
+        });
+
+        socket.on("remotecopyclient" + result.data.id, data => {
+          console.log(data);
+          this.setState({ shownotify: true, remotecopydata: data.text });
+        });
+
+        socket.on("filechange" + result.data.id, data => {
+          this.getuserdata();
+          this.getfolderdata();
+          // console.log(data);
+          // this.setState({ shownotify: true, remotecopydata: data.text });
         });
       })
       .catch(err => {
@@ -246,6 +263,155 @@ class Dashboardlite extends Component {
       this.setState({ hideprogressbar: true });
     }
   };
+
+  uploadfilepresigned = e => {
+    this.setState({
+      alerthidden: true,
+      alertext: "",
+      alertaction: ""
+    });
+
+    this.setState({ isloading: true });
+    this.setState({ resobj: e.target.files });
+    console.log(e.target.files);
+    var filestobeuploaded = e.target.files;
+    var payload = [];
+    var upname = [];
+    var uploadsize = 0;
+    for (let index = 0; index < e.target.files.length; index++) {
+      const element = e.target.files[index];
+      var temppayload = {
+        name: element.name,
+        size: element.size,
+        type: element.type
+      };
+      upname.push(element.name);
+      uploadsize = uploadsize + element.size;
+      payload.push(temppayload);
+    }
+    var dups = false;
+
+    var remain = 100 * 1024 * 1024 - this.state.spaceused;
+
+    var dupname = "";
+    console.log(this.state.allfiles, " ", upname);
+
+    label: for (let element of this.state.allfiles) {
+      for (let ele2 of upname) {
+        console.log(element, " ", ele2);
+
+        if (element === ele2) {
+          console.log("duplicate uploads");
+          dupname = element;
+          dups = true;
+          break label;
+        }
+      }
+    }
+
+    var jwt = localStorage.getItem("jwtguest");
+
+    var config = {
+      headers: {
+        authorization: jwt
+      }
+    };
+
+    if (!dups) {
+      if (remain > uploadsize) {
+        console.log("no dups ok!!!!!!");
+        axios
+          .post("/temp/fileupload", { fileset: payload }, config)
+          .then(result => {
+            console.log(result.data);
+            if (result.data.msg === "success") {
+              // this.getfolderdata();
+              // this.getuserdata();
+
+              console.log(result.data.urlarr);
+
+              console.log(this.state.resobj);
+              console.log(filestobeuploaded);
+
+              for (let index = 0; index < filestobeuploaded.length; index++) {
+                const element = filestobeuploaded[index];
+                console.log(element);
+
+                this.setState({
+                  alerthidden: false,
+                  alertext: "file " + index + " upload initiated",
+                  alertaction: "success",
+                  isloading: true
+                });
+
+                var config = {
+                  onUploadProgress: progressEvent =>
+                    this.fileuploaddindicater(
+                      element.size,
+                      progressEvent.loaded
+                    ),
+                  headers: {
+                    "Content-Type": element.type
+                  }
+                };
+
+                axios
+                  .put(result.data.urlarr[index], element, config)
+                  .then(result2 => {
+                    this.getfolderdata();
+                    this.getuserdata();
+                    console.log(result2);
+                    remoteuploadclientfunction({ id: this.state.id });
+                    this.setState({
+                      alerthidden: false,
+                      alertext: "file " + index + " successfully uploaded",
+                      alertaction: "success",
+                      isloading: false
+                    });
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    this.setState({
+                      alerthidden: false,
+                      alertext: "file " + index + "  upload error",
+                      alertaction: "danger",
+                      isloading: false
+                    });
+                  });
+              }
+            } else if (result.data.msg === "lowspace") {
+              this.getfolderdata();
+              this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "Low space",
+                alertaction: "danger",
+                isloading: false
+              });
+            }
+          })
+          .catch(err => {
+            this.setState({ isloading: false });
+            console.log(err);
+          });
+      } else {
+        this.setState({
+          alerthidden: false,
+          alertext: ` Low Space `,
+          alertaction: "danger",
+          isloading: false
+        });
+      }
+    } else {
+      this.setState({
+        alerthidden: false,
+        alertext: `Duplicate files found please remove them and try again  "${dupname}" `,
+        alertaction: "danger",
+        isloading: false
+      });
+    }
+  };
+
   uploadfile = e => {
     this.setState({
       alerthidden: true,
@@ -403,7 +569,42 @@ class Dashboardlite extends Component {
             text={this.state.alertext}
             hiddenalert={this.state.alerthidden}
           />
+          <Modal
+            // className="commentmodal"
+            open={this.state.modelopen}
+            onClose={this.closeModel}
+            closeIconSize={20}
+            styles={{ modal: { color: "black", width: "50%", height: "44%" } }}
+            center
+          >
+            <div className="textsharemodalflexfiv">
+              <span className="textshareheading">Start sharing text</span>
 
+              <button
+                className="btn btn-primary textsharemodalcopybtn"
+                onClick={() => {
+                  this.copyremoteshare();
+                }}
+              >
+                <i className="far fa-copy"></i>
+              </button>
+            </div>
+
+            <div class="form-group">
+              <textarea
+                id="remotecopytextarea"
+                class="form-control"
+                rows="6"
+                value={this.state.remotecopydata}
+                onChange={e =>
+                  remotecopyclientfunction({
+                    text: e.target.value,
+                    uid: this.state.id
+                  })
+                }
+              ></textarea>
+            </div>
+          </Modal>
           <div hidden={this.state.hideprogressbar} class="progress">
             <div
               class="progress-bar bg-success"
@@ -449,11 +650,18 @@ class Dashboardlite extends Component {
             <div className="timeremain">
               {" "}
               Time remaining 💣 : {this.state.remain}
-            </div>
+            </div>{" "}
+            <div className="dashboardbtnbr"></div>
+            <button
+              className="btn btn-primary fileuploadbtndashlite  "
+              onClick={() => this.openModel()}
+            >
+              Text share
+            </button>
             <input
               type="file"
               name="resobj"
-              onChange={this.uploadfile}
+              onChange={this.uploadfilepresigned}
               className="dashfileinputtemp"
               id="customFile"
               multiple
@@ -510,20 +718,17 @@ class Dashboardlite extends Component {
                       <td>
                         <img src="https://img.icons8.com/color/48/000000/file.png"></img>
                       </td>
-                      <td className="tabledatanamedash">{ele.Key}</td>
+                      <td className="tabledatanamedash">{ele.name}</td>
                       <td>
-                        {moments(
-                          ele.LastModified,
-                          "YYYY-MM-DD HH:mm:ssZ"
-                        ).fromNow()}
+                        {moments(ele.created, "YYYY-MM-DD HH:mm:ssZ").fromNow()}
                       </td>
-                      <td>{(ele.Size / 1024 / 1024).toFixed(3) + " Mb"}</td>
+                      <td>{(ele.size / 1024 / 1024).toFixed(3) + " Mb"}</td>
                       <td>
                         {" "}
                         <button
                           className="btn btn-primary "
                           onClick={() => {
-                            this.downloadfile(ele.Key);
+                            this.downloadfile(ele.name);
                           }}
                         >
                           Download

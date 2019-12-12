@@ -129,7 +129,8 @@ nav {
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
   cursor: pointer;
-  animation: swipdown 3s ease;
+  animation: swipdown 2s ease;
+  z-index: 100;
 }
 
 .landingpagebtn:hover {
@@ -137,36 +138,8 @@ nav {
   color: white;
 }
 
-.landingpagefooter {
-  margin: 0 auto;
-  height: 7vh;
-  width: 90%;
-  text-align: center;
-}
-
-.landingpagefooterdiv {
-  display: flex;
-}
-
 .landigpageversionspan {
   margin-left: 12px;
-}
-
-.landingpagefooterdivitembr {
-  flex: 3;
-  /* justify-content: space-around !important; */
-}
-
-.landingpagefooterdivitem {
-  color: #ffffff;
-  flex: 0.7;
-  justify-content: space-around !important;
-}
-
-.landingpagefooterdivitemlink {
-  color: #dfdfdf;
-  flex: 0.7;
-  justify-content: space-around !important;
 }
 
 @keyframes swipdown {
@@ -175,23 +148,13 @@ nav {
     transform: translateY(-200px);
   }
 
-  50% {
+  100% {
     opacity: 1;
     transform: translateY(0px);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-200px);
   }
 }
 
 @media screen and (max-width: 640px) {
-  .landingpagefooterdiv {
-    display: flex;
-    flex-direction: column;
-  }
-
   .landingpagebtn {
     background-color: rgb(40, 30, 134);
     border: none;
@@ -220,28 +183,16 @@ nav {
 }
 
 @media screen and (max-width: 890px) {
-  .landingpagefooterdivitembr {
-    flex: 1;
-    /* justify-content: space-around !important; */
-  }
   .landingpagbrnav {
     flex: 2;
   }
 
-  .landingpagefooterdiv {
-    display: flex;
-    flex-direction: column;
-  }
   .landingpagenavlinks {
     font-size: 15px;
   }
 }
 
 @media screen and (max-width: 640px) {
-  .landingpagefooterdivitembr {
-    flex: 0;
-    /* justify-content: space-around !important; */
-  }
   .landingpagbrnav {
     flex: 1;
   }
@@ -249,39 +200,16 @@ nav {
   .landingpagenavbar {
     font-size: 1rem;
   }
-
-  .landingpagefooterdiv {
-    display: flex;
-    flex-direction: column;
-  }
 }
 
 @media screen and (max-width: 640px) {
-  .landingpagefooterdivitembr {
-    flex: 0;
-    /* justify-content: space-around !important; */
-  }
   .landingpagbrnav {
     flex: 0;
-  }
-
-  .landingpagefooterdiv {
-    display: flex;
-    flex-direction: column;
   }
 }
 
 @media screen and (max-width: 1600px) {
-  .landingpagefooterdivitembr {
-    flex: 0;
-    /* justify-content: space-around !important; */
-  }
   .landingpagbrnav {
     flex: 0;
-  }
-
-  .landingpagefooterdiv {
-    display: flex;
-    flex-direction: column;
   }
 }
