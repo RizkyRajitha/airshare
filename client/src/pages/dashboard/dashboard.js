@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
-import "./dashboard.css";
+import "./dashboard.scoped.css";
 import moments from "moment";
 import io from "socket.io-client";
 import Modal from "react-responsive-modal";
@@ -13,7 +13,10 @@ import {
 } from "./remotecopy";
 var FileDownload = require("js-file-download");
 
-const api = "http://127.0.0.1:5000";
+// const api = "http://localhost:5000";
+
+// const api = "https://airsharebetav2.herokuapp.com";
+const api = "https://airsharebeta.herokuapp.com";
 
 const jwt = require("jsonwebtoken");
 
@@ -299,7 +302,6 @@ class Dashboard extends Component {
               authorization: jwt
             }
           };
-
           var payload = {
             path: path,
             setallow: !allowstate
@@ -387,8 +389,8 @@ class Dashboard extends Component {
         axios
           .post("/api/deletefile", payload, config)
           .then(result => {
-            // this.getfolderdata();
-            // this.getuserdata();
+            this.getfolderdata();
+            this.getuserdata();
             this.setState({ deleting: false });
             this.setState({ isloading: false });
             console.log(result);

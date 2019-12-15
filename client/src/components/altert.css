@@ -1,7 +1,8 @@
 .bootsrtapaltert {
   position: relative;
   padding: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
+  margin-top: 100px;
+  margin-bottom: -50px;
   border: 1px solid transparent;
   border-top-color: transparent;
   border-right-color: transparent;
@@ -11,7 +12,8 @@
   width: 21%;
   text-align: center;
   margin: 0 auto;
-  animation: swipdown 2.5s forwards;
+  animation: swipdown 10s forwards;
+  z-index: 100;
 }
 
 .danger {
@@ -44,12 +46,13 @@
   100% {
     opacity: 0;
     transform: translateY(-200px);
-  } 
+  }
 }
 
 @media screen and (max-width: 1200px) {
   .bootsrtapaltert {
     width: 51%;
+    
   }
 }
 

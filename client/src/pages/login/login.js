@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { Redirect, Link } from "react-router-dom";
 // import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
-import "./login.css";
+import "./login.scoped.css";
 import axios from "axios";
-import Navbar from "../../components/navbar/navbar";
+import Navbar from "../../components/components/navbar";
 import Footer from "../../components/footer/footer";
 
 class Login extends Component {
@@ -111,81 +111,82 @@ class Login extends Component {
 
   render() {
     return (
-      <div className="maindivlogin">
+      <div className=" ">
         <Navbar />
-        <div className="wrapper">
-          <div className="form-wrapper-login">
-            <div className="headingwrapperlogin">
-              <h3>Your files are excited to see you</h3>
-            </div>
+        <div className="text-center">
+          <div className="container">
+            <form className="form-signin" onSubmit={this.btn1handler}>
+              <img
+                className="mb-4"
+                src="https://img.icons8.com/nolan/64/000000/share.png"
+                alt=""
+                width={72}
+                height={72}
+              />
+              <h1 className="h3 mb-3 font-weight-normal">Login to continue</h1>
+              <label htmlFor="inputEmail" className="sr-only">
+                Email address
+              </label>
 
-            <div className="informm">
-              <br />
+              <input
+                id="email"
+                required
+                type="email"
+                name="email"
+                className="form-control"
+                placeholder="Enter your email"
+                autofocus
+                onChange={this.changehandleremail}
+              />
 
-              <form className="loginform" onSubmit={this.btn1handler}>
-                <br />
-                <br />
-                <br />
-
-                <div class="form-group">
-                  {/* <label for="exampleInputEmail1">Email address</label> */}
-                  <input
-                    id="email"
-                    required
-                    type="email"
-                    name="email"
-                    className="form-control"
-                    placeholder="Enter your email"
-                    onChange={this.changehandleremail}
-                  />
-                </div>
-
-                <div class="form-group">
-                  {/* <label for="exampleInputEmail1">Email address</label> */}
-                  <input
-                    required
-                    id="pass"
-                    type="password"
-                    name="pass"
-                    className="form-control"
-                    placeholder="Enter your password"
-                    onChange={this.changehandlerpass}
-                  />
-                </div>
-
-                <div className="submit">
-                  <input
-                    type="submit"
-                    className="btn btn-primary loginbtn"
-                    value="Login"
-                  />
-                </div>
-              </form>
-              {this.state.creaderror && (
-                <div className="container">
-                  <div className="credeer">Invalid Creadentials</div>
-                </div>
-              )}
-              <br />
-              <br />
-
-              <div>
-                <Link to="/forgotpassword">
-                  <a className="ladinpageatag">Forgotten password</a>
-                </Link>
-                <br />
+              <label htmlFor="inputPassword" className="sr-only">
+                Password
+              </label>
+              <input
+                required
+                id="pass"
+                type="password"
+                name="pass"
+                className="form-control"
+                placeholder="Enter your password"
+                onChange={this.changehandlerpass}
+              />
+              <div className=" text-left mb-3">
+                <a href="/forgotpassword">forgot password</a>
               </div>
-              <div className="haveaccc">
-                still dont have a account
-                <Link to="/signup">
-                  <span> </span> <a className="ladinpageatag">signup</a>
-                </Link>
+              <button
+                className="btn btn-lg btn-primary btn-block"
+                type="submit"
+              >
+                Login
+              </button>
+              {/* <p className="mt-5 mb-3 text-muted ">© 2017-2019</p> */}
+            </form>
+            {this.state.creaderror && (
+              <div className="container">
+                <div className="credeer">Invalid Creadentials</div>
               </div>
-            </div>
-          </div>{" "}
-        </div>{" "}
+            )}
+          </div>
+        </div>
         <Footer />
       </div>
+
+      // <br />
+      // <br />
+
+      // <div>
+      //   <Link to="/forgotpassword">
+      //     <a className="ladinpageatag">Forgotten password</a>
+      //   </Link>
+      //   <br />
+      // </div>
+      // <div className="haveaccc">
+      //   still dont have a account
+      //   <Link to="/signup">
+      //     <span> </span> <a className="ladinpageatag">signup</a>
+      //   </Link>
+      // </div>
     );
   }
 }

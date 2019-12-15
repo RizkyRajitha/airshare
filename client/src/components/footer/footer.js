@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import "./fotter.css";
+import "./fotter.scoped.css";
 
 class Footer extends Component {
   render() {
@@ -13,7 +13,7 @@ class Footer extends Component {
               className="landingpagefooterdivitemlink"
               href="http://rizkyrajitha.github.io/"
             >
-              contact us
+              contact us  &nbsp;  &nbsp; &nbsp;
             </a>
           </div>
           <div className="landingpagefooterdivitem">

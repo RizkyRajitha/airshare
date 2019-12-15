@@ -36,7 +36,6 @@ let s3bucket = new AWS.S3({
   accessKeyId: awskey,
   secretAccessKey: awsseacret
 });
-// telegram = '982920318:AAFJanZtcladHlMpt7rELD38dbh6wT91meM'    chait = -363135079
 
 const port = process.env.PORT || 5000;
 
@@ -214,6 +213,7 @@ app.get("/share/:sharecode", function(req, res) {
         var then = new Date(sharecodedoc.createdAt).getTime();
         var diff = Math.floor((new Date().getTime() - then) / 1000);
 
+        // if(false){
         if (diff < 604700) {
           console.log("\n\nServing from DB \n\n");
 
@@ -271,11 +271,11 @@ app.get("/share/:sharecode", function(req, res) {
             });
         }
       } else {
-        res.render("pages/share", {
-          size: "Nan",
-          title: "error file not found",
-          username: "",
-          resurl: "0"
+        res.render("pages/notfound", {
+          // size: sharecodedoc.size,
+          // title: sharecodedoc.key
+          // username: sharecodedoc.username
+          // resurl: sharecodedoc.result
         });
       }
     })

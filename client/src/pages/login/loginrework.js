@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import "./loginrework.css";
+import "./loginrework.scoped.css";
 import axios from "axios";
-import Navbar from "../../components/navbar/navbar";
+import Navbar from "../../components/components/navbar";
 import Footer from "../../components/footer/footer";
 
 class Loginnew extends Component {
@@ -107,59 +107,50 @@ class Loginnew extends Component {
 
   render() {
     return (
-      <div className="maindivlogin ">
+      <div className=" ">
         <Navbar />
-        <div class="row justify-content-center">
-          <div class="col-sm-4">
-            <form className="" onSubmit={this.btn1handler}>
-              <div class="card">
-                <article class="card-body">
-                  <a
-                    href="/signup"
-                    class="float-right btn btn-outline-primary"
-                  >
-                    Sign up
-                  </a>
-                  <h4 class="card-title mb-4 mt-1">Sign in</h4>
-                  <form>
-                    <div class="form-group">
-                      <label>Your email</label>
-                      <input
-                        name=""
-                        class="form-control"
-                        placeholder="Email"
-                        type="email"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <Link to="/forgotpassword">
-                        <a class="float-right">Forgot password ?</a>
-                      </Link>
-
-                      <label>Your password</label>
-                      <input
-                        class="form-control"
-                        placeholder="******"
-                        type="password"
-                      />
-                    </div>
-
-                    <div class="form-group">
-                      <button type="submit" class="btn btn-primary btn-block">
-                        {" "}
-                        Login{" "}
-                      </button>
-                    </div>
-                  </form>
-                </article>
-              </div>{" "}
-            </form>
-
-            {this.state.creaderror && (
-              <div className="container">
-                <div className="credeer">Invalid Creadentials</div>
-              </div>
-            )}
+        <div className="text-center">
+          <div className="container" >
+          <form className="form-signin">
+            <img
+              className="mb-4"
+              src="https://img.icons8.com/nolan/64/000000/share.png"
+              alt=""
+              width={72}
+              height={72}
+            />
+            <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>
+            <label htmlFor="inputEmail" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="inputEmail"
+              className="form-control"
+              placeholder="Email address"
+              required
+              autofocus
+              type="email"
+            />
+            <label htmlFor="inputPassword" className="sr-only">
+              Password
+            </label>
+            <input
+              id="inputPassword"
+              className="form-control"
+              placeholder="Password"
+              required
+              type="password"
+            />
+            <div className="checkbox mb-3">
+              <label>
+                <input defaultValue="remember-me" type="checkbox" /> Remember me
+              </label>
+            </div>
+            <button className="btn btn-lg btn-primary btn-block" type="submit">
+              Sign in
+            </button>
+            {/* <p className="mt-5 mb-3 text-muted ">© 2017-2019</p> */}
+          </form>
           </div>
         </div>
         <Footer />

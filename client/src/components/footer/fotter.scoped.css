@@ -1,8 +1,12 @@
 .landingpagefooter {
+  background: #34363a;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  text-align: center;
   margin: 0 auto;
   height: 7vh;
-  width: 90%;
-  text-align: center;
+  width: 100%;
   flex-direction: row;
   display: flex;
   justify-content: space-around;
@@ -29,7 +33,8 @@
 
 .landingpagefooterdivitemlink {
   color: #dfdfdf;
-  flex: 0.7;
+  flex: -1px;
+  text-decoration: none;
   justify-content: space-around !important;
 }
 

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
-import "./dashboardlite.css";
+import "./dashboardlite.scoped.css";
 import moments from "moment";
 
 import Modal from "react-responsive-modal";
@@ -13,8 +13,9 @@ import {
 } from "./remotecopy";
 const jwt = require("jsonwebtoken");
 
-const api = "http://127.0.0.1:5000";
-
+// const api = "http://localhost:5000";
+// const api = "https://airsharebetav2.herokuapp.com";
+const api = "https://airsharebeta.herokuapp.com";
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 
 class Dashboardlite extends Component {

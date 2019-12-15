@@ -123,9 +123,22 @@ exports.deletefile = (req, res) => {
                   { $pull: { resources: { _id: req.body.contentid } } }
                 )
                   .then(doc => {
-                    sockfunc.wsfunc("filechange" + userId, {});
-                    console.log(doc);
-                    res.status(200).json({ msg: "sucsess" });
+
+
+
+                    Sharecode.findOneAndDelete(
+                      { key: req.body.key },
+                      // { $pull: { resources: { _id: req.body.contentid } } }
+                    ).then((result1) => {
+                      sockfunc.wsfunc("filechange" + userId, {});
+                      console.log(doc);
+                      res.status(200).json({ msg: "sucsess" });
+                    }).catch((err) => {
+                      console.log(err);
+                    });
+
+
+                   
                   })
                   .catch(err => {
                     console.log(err);
@@ -516,20 +529,6 @@ exports.addtorrent = (req, res) => {
 //     });
 // };
 
-// exports.getuserlocdata = (req, res) => {
-//   // var userip =
-
-//   axios
-//     .get(`https://api.ipdata.co/${userip}?api-key=${ipdataapikey}`)
-//     .then(result => {
-//       var userlocdata = {
-//         ip: result.ip,
-//         country_name: result.country_name,
-//         flag: result.flag
-//       };
-//     })
-//     .catch(err => {});
-// };
 
 // exports.downloadzip = (req, res) => {
 //   dbx

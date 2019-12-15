@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import "./navbar.css";
+import "./navbar.scoped.css";
 class Navbar extends Component {
   render() {
     return (
@@ -18,7 +18,7 @@ class Navbar extends Component {
         </a>{" "}
         <div className="mx-auto order-0">
           <a className="navbar-brand mx-auto" href="/">
-            AIRSHARE <span className="">BETA v1.0</span>
+            AIRSHARE <span className="">BETA v2.0</span>
           </a>
         </div>
         <button
@@ -65,7 +65,7 @@ class Navbar extends Component {
                 Home <span className="sr-only">(current)</span>
               </a>
             </li>
-            <li className="nav-item"> 
+            <li className="nav-item">
               <a
                 className="nav-link"
                 onClick={() => {

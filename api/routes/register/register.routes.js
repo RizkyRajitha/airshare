@@ -9,7 +9,8 @@ const jwtsecret =
   process.env.jwtsecret || require("../../config/env").jwtsecret;
 
 const awskey = process.env.awskey || require("../../config/env").awskey;
-const awsseacret = process.env.awskey || require("../../config/env").awsseacret;
+const awsseacret =
+  process.env.awsseacret || require("../../config/env").awsseacret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 exports.signup = (req, res) => {

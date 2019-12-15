@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import axios from "axios";
-import Navbar from "../../components/navbar/navbar";
+import Navbar from "../../components/components/navbar";
 import Altert from "../../components/altert";
 import Footer from "../../components/footer/footer";
-import "./signup.css";
+import "./signup.scoped.css";
 
 const jwt = require("jsonwebtoken");
 class Signup extends Component {
@@ -89,160 +89,147 @@ class Signup extends Component {
     if (usernsmae.length < 8) {
       this.setState({ unamevlid: false });
     } else {
+      if (uname.indexOf(" ") >= 0) {
+        this.setState({ unamevlid: false });
+      } else {
+        console.log("check username");
+        axios
+          .post("/reg/chechusername", { username: uname })
+          .then(res => {
+            console.log(res.data);
+            if (res.data.msg === "valid") {
+              this.setState({ unamevlid: true }); //data-error="wrong" data-success="right"
+            } else if (res.data.msg === "invalid") {
+              this.setState({ unamevlid: false });
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+
       // document.getElementById("signupusername").removeAttribute("data-error");
-      console.log("check username");
-      axios
-        .post("/reg/chechusername", { username: uname })
-        .then(res => {
-          console.log(res.data);
-          if (res.data.msg === "valid") {
-            this.setState({ unamevlid: true }); //data-error="wrong" data-success="right"
-          } else if (res.data.msg === "invalid") {
-            this.setState({ unamevlid: false });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
     }
   };
 
   render() {
     return (
-      <div className="maindivsignup">
+      <div className="">
         <Navbar />
-        <div className="wrappersignup">
+        <div className="container">
           {" "}
-          <Altert
+          {/* <Altert
             action={this.state.alertaction}
             text={this.state.alertext}
             hiddenalert={this.state.alerthidden}
-          />
-          <div className="form-wrappersignup">
-            <h2 className="signupheading">Signup</h2>
-            <div className="informmsignup">
-              <form onSubmit={this.onsubmit}>
-                <div class="row">
-                  <div class="col">
-                    <div className="form-group pt-2">
-                      <input
-                        // placeholder="Placeholder"
-                        id="first_name"
-                        type="text"
-                        className="form-control"
-                        required
-                        onChange={e =>
-                          this.setState({ firstaName: e.target.value })
-                        }
-                        placeholder="Enter your First name"
-                      />
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div className="form-group pt-2">
-                      <input
-                        // placeholder="Placeholder"
-                        id="lastname"
-                        type="text"
-                        required
-                        className="form-control"
-                        placeholder="Enter your Last Name"
-                        onChange={e =>
-                          this.setState({ lastName: e.target.value })
-                        }
-                      />{" "}
-                    </div>
-                  </div>
-                </div>
+          /> */}
+          <form className="form-signin" onSubmit={this.onsubmit}>
+            <h1 className="h3 mb-3 font-weight-normal">Signup</h1>
 
-                <div className="form-group pt-2">
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    className="form-control"
-                    onChange={e => this.setState({ email: e.target.value })}
-                    placeholder="Enter your email"
-                  />
-                </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <input
+                  // placeholder="Placeholder"
+                  id="first_name"
+                  type="text"
+                  className="form-control "
+                  required
+                  onChange={e => this.setState({ firstaName: e.target.value })}
+                  placeholder="Enter your First name"
+                />
+              </div>
+              <div class="col">
+                <input
+                  // placeholder="Placeholder"
+                  id="lastname"
+                  type="text"
+                  required
+                  className="form-control"
+                  placeholder="Enter your Last Name"
+                  onChange={e => this.setState({ lastName: e.target.value })}
+                />{" "}
+              </div>
+            </div>
 
-                <div className="form-group pt-2">
-                  <input
-                    id="username"
-                    type="text"
-                    required
-                    className={
-                      this.state.unamevlid
-                        ? "form-control is-valid"
-                        : this.state.unamevlid === null
-                        ? "form-control "
-                        : "form-control is-invalid"
-                    }
-                    minLength="8"
-                    placeholder="Enter your prefered username"
-                    onChange={e => {
-                      this.setState({ username: e.target.value });
-                      this.chechusername(e.target.value);
-                    }}
-                  />
-                </div>
+            <input
+              id="email"
+              type="email"
+              required
+              className="form-control "
+              onChange={e => this.setState({ email: e.target.value })}
+              placeholder="Enter your email"
+            />
 
-                <div className="form-group pt-2">
-                  <input
-                    // placeholder="Placeholder"
-                    id="password"
-                    type="password"
-                    required
-                    className="form-control"
-                    placeholder="Enter your password"
-                    onChange={e => this.setState({ password: e.target.value })}
-                  />
-                </div>
+            <input
+              id="username"
+              type="text"
+              required
+              className={
+                this.state.unamevlid
+                  ? "form-control fominputsrows is-valid"
+                  : this.state.unamevlid === null
+                  ? "form-control fominputsrows "
+                  : "form-control fominputsrows is-invalid"
+              }
+              minLength="8"
+              placeholder="Enter your prefered username"
+              onChange={e => {
+                this.setState({ username: e.target.value });
+                this.chechusername(e.target.value);
+              }}
+            />
 
-                <div className="form-group pt-2">
-                  <input
-                    // placeholder="Placeholder"
-                    id="invitecode"
-                    type="text"
-                    required
-                    className="form-control"
-                    placeholder="Enter your Invite code"
-                    minLength="6"
-                    onChange={e =>
-                      this.setState({ invitecode: e.target.value })
-                    }
-                  />
-                </div>
+            <input
+              // placeholder="Placeholder"
+              id="password"
+              type="password"
+              required
+              className="form-control fominputsrows"
+              placeholder="Enter your password"
+              onChange={e => this.setState({ password: e.target.value })}
+            />
 
-                <div className="form-group  pt-2">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="gridCheck1"
-                      required
-                    />
+            <input
+              // placeholder="Placeholder"
+              id="invitecode"
+              type="text"
+              required
+              className="form-control fominputsrows"
+              placeholder="Enter your Invite code"
+              minLength="6"
+              onChange={e => this.setState({ invitecode: e.target.value })}
+            />
 
-                    <span className="checkterms">
-                      {" "}
-                      I accept the Terms of Use &{" "}
-                      <a className="privarcypolicyanchor" href="/privacypolicy">
-                        {" "}
-                        Privacy Policy{" "}
-                      </a>
-                    </span>
-                  </div>
-                </div>
-                <button
-                  className="btn btn-primary  signupbtn"
-                  type="submit"
-                  disabled={!this.state.unamevlid}
-                >
-                  Signup
-                </button>
-              </form>
-            </div>{" "}
-          </div>
+            <div className="form-group  pt-2">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="gridCheck1"
+                  required
+                />
+
+                <span className="checkterms">
+                  {" "}
+                  I accept the
+                  <a className="privarcypolicyanchor" href="/privacypolicy">
+                    {" "}
+                    Privacy Policy{" "}
+                  </a>
+                </span>
+              </div>
+            </div>
+            <div className="container error" hidden={this.state.alerthidden}>
+              <span className="">{this.state.alertext}</span>
+            </div>
+            <button
+              className="btn btn-primary  signupbtn"
+              type="submit"
+              disabled={!this.state.unamevlid}
+            >
+              Signup
+            </button>
+          </form>
         </div>{" "}
         <Footer />
       </div>
