@@ -2,11 +2,11 @@ import React, { Component } from "react";
 // import { Redirect, Link } from "react-router-dom";
 // import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
-import "./resetpassword.css";
+import "./resetpassword.scoped.css";
 import axios from "axios";
 import moments from "moment";
 // import Navbar from "../../components/navbar/navbar";
-// import Footer from "../../components/footer/footer";
+import Footer from "../../components/footer/footer";
 const jsonwebtoken = require("jsonwebtoken");
 
 class Resetpassword extends Component {
@@ -21,60 +21,60 @@ class Resetpassword extends Component {
     remain: ""
   };
 
-  componentDidMount() {
-    //M.toast({ html: "I am a toast!" });
-    var jwt = this.props.match.params.id; //localStorage.getItem("jwt");
-    console.log("comp mount");
-    console.log(jwt);
-    try {
-      var tk = jsonwebtoken.verify(jwt, "authdemo");
-      if (tk) {
-        console.log(tk);
-        console.log("valid token");
+  // componentDidMount() {
+  //   //M.toast({ html: "I am a toast!" });
+  //   var jwt = this.props.match.params.id; //localStorage.getItem("jwt");
+  //   console.log("comp mount");
+  //   console.log(jwt);
+  //   try {
+  //     var tk = jsonwebtoken.verify(jwt, "authdemo");
+  //     if (tk) {
+  //       console.log(tk);
+  //       console.log("valid token");
 
-        var date = new Date(tk.exp * 1000);
+  //       var date = new Date(tk.exp * 1000);
 
-        var dato = new Date().toUTCString();
+  //       var dato = new Date().toUTCString();
 
-        var ddt = moments(date).format("YYYY-MM-DD HH:mm:ss");
-        var ddtas = moments(dato).format("YYYY-MM-DD HH:mm:ss");
+  //       var ddt = moments(date).format("YYYY-MM-DD HH:mm:ss");
+  //       var ddtas = moments(dato).format("YYYY-MM-DD HH:mm:ss");
 
-        console.log("ddt");
-        console.log(ddt);
-        var stst = moments.utc(
-          moments(ddt).diff(moments(ddtas, "YYYY-MM-DD HH:mm:ss"))
-        );
+  //       console.log("ddt");
+  //       console.log(ddt);
+  //       var stst = moments.utc(
+  //         moments(ddt).diff(moments(ddtas, "YYYY-MM-DD HH:mm:ss"))
+  //       );
 
-        var countdown = setInterval(() => {
-          stst.subtract({ second: 1 });
-          this.setState({ remain: stst.format("HH:mm:ss").slice(3, 8) });
-          console.log(stst.format("HH:mm:ss"));
+  //       var countdown = setInterval(() => {
+  //         stst.subtract({ second: 1 });
+  //         this.setState({ remain: stst.format("HH:mm:ss").slice(3, 8) });
+  //         console.log(stst.format("HH:mm:ss"));
 
-          if (stst.format("HH:mm:ss") === "00:00:00") {
-            this.setState({
-              alerthidden: false,
-              alertext: "please login to continue",
-              alertaction: "danger"
-            });
-            this.props.history.push("/login");
-            clearInterval(countdown);
-          }
-        }, 1000);
-      }
-    } catch (error) {
-      console.log(error);
+  //         if (stst.format("HH:mm:ss") === "00:00:00") {
+  //           this.setState({
+  //             alerthidden: false,
+  //             alertext: "please login to continue",
+  //             alertaction: "danger"
+  //           });
+  //           this.props.history.push("/login");
+  //           clearInterval(countdown);
+  //         }
+  //       }, 1000);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
 
-      // setTimeout(() => {
-      //   this.props.history.push("/");
-      // }, 2000);
+  //     // setTimeout(() => {
+  //     //   this.props.history.push("/");
+  //     // }, 2000);
 
-      this.setState({
-        alerthidden: false,
-        alertext: "Token expired please request a reset password again",
-        alertaction: "danger"
-      });
-    }
-  }
+  //     this.setState({
+  //       alerthidden: false,
+  //       alertext: "Token expired please request a reset password again",
+  //       alertaction: "danger"
+  //     });
+  //   }
+  // }
 
   btn1handler = e => {
     e.preventDefault();
@@ -137,73 +137,79 @@ class Resetpassword extends Component {
 
   render() {
     return (
-      <div className="maindivlogin">
-        {/* <Navbar /> */}
-        <div className="wrapper">
-          <Altert
-            action={this.state.alertaction}
-            text={this.state.alertext}
-            hiddenalert={this.state.alerthidden}
-          />
-          <div className="form-wrapper-resetpass">
-            <div className="headingwrapperlogin">
-              <h3>Reset your password</h3>
-            </div>
+      <div className="maindivreset">
+        <Altert
+          action={this.state.alertaction}
+          text={this.state.alertext}
+          hiddenalert={this.state.alerthidden}
+        />
 
-            <span>{this.state.remain}</span>
+        <div className="text-center">
+          <div className="container">
+            <form className="form-signin" onSubmit={this.btn1handler}>
+              <img
+                className="mb-4"
+                src="https://img.icons8.com/nolan/64/000000/share.png"
+                alt=""
+                width={72}
+                height={72}
+              />
+              <h1 className="h3 mb-3 font-weight-normal">
+                Reset your password
+              </h1>
+              <div className=" text-left mb-3">
+                <span>Time remaining : {this.state.remain}</span>
+              </div>
+              <label htmlFor="inputEmail" className="sr-only">
+                Enter new password
+              </label>
 
-            <div className="informmresetpass">
-              <br />
+              <input
+                placeholder="Enter new password"
+                id="pass1"
+                required
+                type="password"
+                name="password"
+                className="form-control"
+                minLength="7"
+                onChange={e => this.setState({ password1: e.target.value })}
+                autofocus
+              />
 
-              <form onSubmit={this.btn1handler}>
-                <br />
-                <br />
-                <br />
+              <label htmlFor="inputPassword" className="sr-only">
+                Password
+              </label>
+              <input
+                placeholder="Re enter new password"
+                required
+                id="pass2"
+                type="password"
+                name="pass2"
+                className="form-control"
+                onChange={e => this.setState({ password2: e.target.value })}
+              />
+              <div className=" text-left mb-3">
+                <a href="/forgotpassword">forgot password</a>
+              </div>
 
-                <div className="form-group">
-                  <input
-                    placeholder="New password"
-                    id="pass1"
-                    required
-                    type="password"
-                    name="password"
-                    className="form-control"
-                    minLength="7"
-                    onChange={e => this.setState({ password1: e.target.value })}
-                  />
-                  {/* <label className="logininputlabel" for="email">
-                    New password
-                  </label> */}
-                </div>
-                <div className="form-group">
-                  <input
-                    placeholder="Re enter new password"
-                    required
-                    id="pass2"
-                    type="password"
-                    name="pass2"
-                    className="form-control"
-                    onChange={e => this.setState({ password2: e.target.value })}
-                  />
-                  {/* <label className="logininputlabel" for="pass">
-                    Re enter new password
-                  </label> */}
-                </div>
-                <div className="submit">
-                  <input
-                    type="submit"
-                    className="btn loginbtn"
-                    value="Reset password"
-                  />
-                </div>
-              </form>
+              <div
+                className={"container saga" + this.state.alertaction}
+                hidden={this.state.alerthidden}
+              >
+                <span className="">{this.state.alertext}</span>
+              </div>
 
-              <br />
-              <br />
-            </div>
-          </div>{" "}
-        </div>{" "}
-        {/* <Footer /> */}
+              <button
+                className="btn btn-lg btn-primary btn-block"
+                type="submit"
+              >
+                Reset password
+              </button>
+              {/* <p className="mt-5 mb-3 text-muted ">© 2017-2019</p> */}
+            </form>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }

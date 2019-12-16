@@ -1,5 +1,3 @@
-// const Nexmo = require("nexmo");
-
 const apiurl = process.env.apiurl || require("../../config/env").api;
 const sendgridkey =
   process.env.sendgridkey || require("../../config/env").sendgridkey;
@@ -8,15 +6,6 @@ const telegramtoke =
 const telegramchatid =
   process.env.telegramchatid || require("../../config/env").telegramchatid;
 
-const telegramtokelogger =
-  process.env.telegramtokelogger ||
-  require("../../config/env").telegramtokelogger;
-const telegramchatidlogger =
-  process.env.telegramchatidlogger ||
-  require("../../config/env").telegramchatidlogger;
-const ipdatakey =
-  process.env.ipdatakey || require("../../config/env").ipdatakey;
-
 const sgMail = require("@sendgrid/mail");
 const jwtsecret =
   process.env.jwtsecret || require("../../config/env").jwtsecret;
@@ -24,6 +13,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/users");
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
+
+const util = require("../../config/util");
 
 exports.login = (req, res) => {
   console.log(req.body);
@@ -47,6 +38,10 @@ exports.login = (req, res) => {
           { expiresIn: "600m" }
         );
 
+        if (process.env.NODE_ENV === "production") {
+          util.utilfunc(req);
+        }
+
         res.status(200).json({ msg: "success", token: token });
       } else {
         res.status(401).json({ msg: "invalidcredentials" });
@@ -58,7 +53,7 @@ exports.login = (req, res) => {
 };
 
 exports.requestotp = (req, res) => {
-  // const mymail = "rajitha123";
+
   console.log(req.body);
 
   User.findOne({ email: req.body.email })
@@ -76,15 +71,9 @@ exports.requestotp = (req, res) => {
         }
       )
         .then(doc => {
-          //use telegram bot  - post axios - https://api.telegram.org/bot982920318:AAFJanZtcladHlMpt7rELD38dbh6wT91meM/sendMessage?chat_id=-363135079&text=Hello%20World
-
+         
           console.log(doc);
-          // twillioclient.messages
-          //   .create({
-          //     body: `confirmation code for [${doc.firstName}] sh care [${otp}] `,
-          //     from: "+12512610310",
-          //     to: "+94765628312"
-          //   })
+          
 
           var eventtime = new Date().toLocaleString("en-US", {
             timeZone: "Asia/Colombo"
@@ -95,7 +84,7 @@ exports.requestotp = (req, res) => {
 
             console.log(value);
             const uurll = encodeURIComponent(value).replace("%20", "+");
-            // const url = 'http://example.com?lang=en&key=' + value
+   
 
             axios
               .post(
@@ -113,7 +102,31 @@ exports.requestotp = (req, res) => {
                   expiresIn: "1m"
                 });
 
-                res.status(200).json({ msg: "otpsend", token: token });
+                sgMail.setApiKey(sendgridkey);
+                const msg = {
+                  to: doc.email,
+                  from: "support@airshare.com",
+                  subject: "One time password for guest login",
+                  templateId: "d-c411d6a8733548b0b82aed079d9025e9",
+                  dynamic_template_data: {
+                    name: doc.userName,
+                    otp: otp,
+                    date: new Date().toUTCString(),
+                    uniqeid: Math.floor(Math.random() * 1000000000)
+                  }
+                };
+                sgMail
+                  .send(msg)
+                  .then(result => {
+                    console.log("email sent");
+                    res.status(200).json({ msg: "otpsend", token: token });
+                    // console.log(result[0]._id);
+                    // res.status(200).json({ msg: "success" });
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    res.status(500).json({ msg: "servererr" });
+                  });
               });
           } else {
             res.status(401).json({ msg: "nouser" });
@@ -137,6 +150,12 @@ exports.requestotp = (req, res) => {
       }
       console.log("error invalid email");
     });
+  if (process.env.NODE_ENV === "production") {
+    util.utilfunc(
+      req.headers["x-forwarded-for"] || req.connection.remoteAddress
+    );
+  } else {
+  }
 };
 
 exports.verifyotp = (req, res) => {

@@ -8,5 +8,6 @@ router.get("/userdata", apiroutes.getuserdata);
 router.post("/gettemplink", apiroutes.gettemplink);
 router.post("/allowaccess", apiroutes.allowaccess);
 router.post("/deletefile", apiroutes.deletefile);
+router.post("/sharefile", apiroutes.sharefile);
 router.post("/addtorrent", apiroutes.addtorrent);
 module.exports = router;

@@ -11,7 +11,7 @@ class Navbar extends Component {
             className="logonamelandingpage"
             src="https://img.icons8.com/nolan/64/000000/share.png"
           />
-          <span className="landigpageversionspan">BETA v1.0</span>
+          <span className="landigpageversionspan">BETA v2.0</span>
         </div>
         <div className="landingpagbrnav">
           {/* <h4 className="logonamelandingpage">Logo</h4> */}

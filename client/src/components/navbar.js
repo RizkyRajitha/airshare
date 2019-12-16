@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import "./navbar.css";
+import "./navbar.scoped.css";
 class Navbar extends Component {
   render() {
     return (
@@ -18,7 +18,7 @@ class Navbar extends Component {
         </a>{" "}
         <div className="mx-auto order-0">
           <a className="navbar-brand mx-auto" href="/">
-            AIRSHARE <span className="">BETA v1.0</span>
+            AIRSHARE <span className="">BETA v2.0</span>
           </a>
         </div>
         <button
@@ -34,6 +34,27 @@ class Navbar extends Component {
         </button>
         <div className="collapse navbar-collapse" id="navbarResponsive">
           <ul className="navbar-nav ml-auto">
+            <li className="nav-item ">
+              <a
+                className={`nav-link ${
+                  !this.props.shownotify ? "disabled" : ""
+                } `}
+                onClick={() => this.props.clickremotesharenotify()}
+                href="#"
+              >
+                {this.props.shownotify ? (
+                  <span class="fa-stack fa-1x has-badge" data-count="1">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="far fa-bell fa-stack-1x fa-inverse"></i>
+                  </span>
+                ) : (
+                  <i class="far fa-bell "></i>
+                )}
+
+                {/* */}
+              </a>
+            </li>
+
             <li className="nav-item ">
               <a className="nav-link disabled" href="#">
                 {this.props.username}

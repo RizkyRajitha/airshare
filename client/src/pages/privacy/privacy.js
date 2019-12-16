@@ -7,10 +7,10 @@ class Privacypolicy extends Component {
         <h1>Privacy Policy for AIRSHARE</h1>
 
         <p>
-          At AIrSHARE, accessible from www.airshare.com, one of our main
+          At AIRSHARE, accessible from https://airsharebeta.herokuapp.com/, one of our main
           priorities is the privacy of our visitors. This Privacy Policy
           document contains types of information that is collected and recorded
-          by AIrSHARE and how we use it.
+          by AIRSHARE and how we use it.
         </p>
 
         <p>
@@ -21,7 +21,7 @@ class Privacypolicy extends Component {
         <h2>Log Files</h2>
 
         <p>
-          AIrSHARE follows a standard procedure of using log files. These files
+          AIRSHARE follows a standard procedure of using log files. These files
           log visitors when they visit websites. All hosting companies do this
           and a part of hosting services' analytics. The information collected
           by log files include internet protocol (IP) addresses, browser type,
@@ -35,7 +35,7 @@ class Privacypolicy extends Component {
         <h2>Cookies and Web Beacons</h2>
 
         <p>
-          Like any other website, AIrSHARE uses 'cookies'. These cookies are
+          Like any other website, AIRSHARE uses 'cookies'. These cookies are
           used to store information including visitors' preferences, and the
           pages on the website that the visitor accessed or visited. The
           information is used to optimize the users' experience by customizing
@@ -47,7 +47,7 @@ class Privacypolicy extends Component {
 
         <p>
           You may consult this list to find the Privacy Policy for each of the
-          advertising partners of AIrSHARE. Our Privacy Policy was created with
+          advertising partners of AIRSHARE. Our Privacy Policy was created with
           the help of the{" "}
           <a href="https://www.privacypolicygenerator.info">
             Privacy Policy Generator
@@ -72,7 +72,7 @@ class Privacypolicy extends Component {
         <h2>Third Party Privacy Policies</h2>
 
         <p>
-          AIrSHARE's Privacy Policy does not apply to other advertisers or
+          AIRSHARE's Privacy Policy does not apply to other advertisers or
           websites. Thus, we are advising you to consult the respective Privacy
           Policies of these third-party ad servers for more detailed
           information. It may include their practices and instructions about how
@@ -96,7 +96,7 @@ class Privacypolicy extends Component {
         </p>
 
         <p>
-          AIrSHARE does not knowingly collect any Personal Identifiable
+          AIRSHARE does not knowingly collect any Personal Identifiable
           Information from children under the age of 13. If you think that your
           child provided this kind of information on our website, we strongly
           encourage you to contact us immediately and we will do our best
@@ -108,7 +108,7 @@ class Privacypolicy extends Component {
         <p>
           This Privacy Policy applies only to our online activities and is valid
           for visitors to our website with regards to the information that they
-          shared and/or collect in AIrSHARE. This policy is not applicable to
+          shared and/or collect in AIRSHARE. This policy is not applicable to
           any information collected offline or via channels other than this
           website.
         </p>

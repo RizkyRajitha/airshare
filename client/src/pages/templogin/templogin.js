@@ -2,12 +2,12 @@ import React, { Component } from "react";
 
 import { Redirect, Link } from "react-router-dom";
 import axios from "axios";
-import Navbar from "../../components/navbar/navbar";
+import Navbar from "../../components/components/navbar";
 import Altert from "../../components/altert";
 import Footer from "../../components/footer/footer";
 // import "./css/main.css";
 // import "./landingpage.css";
-import "./templogin.css";
+import "./templogin.scoped.css";
 
 class Templogin extends Component {
   state = {
@@ -41,7 +41,7 @@ class Templogin extends Component {
           this.setState({ emailhidden: true });
           this.setState({
             alerthidden: false,
-            alertext: "OTP send",
+            alertext: "OTP sent . Please check your Email",
             alertaction: "success"
           });
         }
@@ -138,7 +138,7 @@ class Templogin extends Component {
           this.setState({ emailhidden: true });
           this.setState({
             alerthidden: false,
-            alertext: "OTP re send",
+            alertext: "OTP re sent . Please check your Email",
             alertaction: "success"
           });
         }
@@ -172,113 +172,114 @@ class Templogin extends Component {
 
   render() {
     return (
-      <div className="maindivforgotpassword">
+      <div className="">
         <Navbar />
         <Altert
           action={this.state.alertaction}
           text={this.state.alertext}
           hiddenalert={this.state.alerthidden}
         />
-        <div className="wrapper">
-          <div className="form-wrapper">
-            <div className="headingwrapperforgotpassword">
-              <h4>
-                Not sure where you login <br /> use guest mode to securely
-                access your files without a fuss
-              </h4>
-            </div>
 
-            <div className="informmforgotpassword">
-              <br />
+        <div className="text-center" hidden={this.state.emailhidden}>
+          <div className="container">
+            <form
+              className="form-signin"
+              onSubmit={this.onsubmit}
+              hidden={this.state.emailhidden}
+            >
+              <img
+                className="mb-4"
+                src="https://img.icons8.com/nolan/64/000000/share.png"
+                alt=""
+                width={72}
+                height={72}
+              />
+              <h1 className="h3 mb-3 font-weight-normal"> Guest Login</h1>
+              <label htmlFor="inputEmail" className="sr-only">
+                Email address
+              </label>
 
-              <form onSubmit={this.onsubmit} hidden={this.state.emailhidden}>
-                <br />
-                <br />
-                <br />
-
-                <div className="form-group">
-                  <input
-                    className="form-control"
-                    placeholder="Enter your email"
-                    id="username"
-                    type="email"
-                    required
-                    onChange={e => this.setState({ email: e.target.value })}
-                  />
-                  {/* <label className="forgotpasswordinputlabel" for="email">
-                    Email
-                  </label> */}
-                </div>
-
-                <div className="submit">
-                  <input
-                    type="submit"
-                    className="btn forgotpasswordbtn"
-                    value="Send my one time password"
-                  />
-                </div>
-              </form>
-
-              <form
-                onSubmit={this.onsubmitotp}
-                hidden={!this.state.emailhidden}
+              <input
+                className="form-control"
+                placeholder="Enter your email"
+                id="email"
+                type="email"
+                required
+                onChange={e => this.setState({ email: e.target.value })}
+                name="email"
+                autofocus
+              />
+              <div
+                className={"container saga" + this.state.alertaction}
+                hidden={this.state.alerthidden}
               >
-                <br />
-                <br />
-                <br />
-
-                <div className="form-group">
-                  <input
-                    placeholder="Enter your one time password"
-                    id="username"
-                    type="text"
-                    required
-                    onChange={e => this.setState({ otp: e.target.value })}
-                    className="form-control"
-                  />
-                  {/* <label className="forgotpasswordinputlabel">
-                    Enter your one tim epassword
-                  </label> */}
-                </div>
-                <div>
-                  <span>
-                    {this.state.timer < 0 && (
-                      <a onClick={() => this.resendotp()}> Resend otp </a>
-                    )}{" "}
-                    {this.state.timer}
-                  </span>
-                </div>
-                <div className="submit">
-                  <input
-                    type="submit"
-                    className="btn forgotpasswordbtn"
-                    value="let me in"
-                  />
-                </div>
-              </form>
-              {this.state.creaderror && (
-                <div className="container">
-                  <div className="credeer">Invalid Creadentials</div>
-                </div>
-              )}
-              <br />
-              <br />
-
-              <div className="haveaccc">
-                having a problem
-                <Link to="/contactsupport">
-                  <span> </span>{" "}
-                  <a
-                    className="ladinpageatag"
-                    href="http://rizkyrajitha.github.io/"
-                  >
-                    contact support
-                  </a>
-                </Link>
+                <span className="">{this.state.alertext}</span>
               </div>
-            </div>
-          </div>{" "}
-        </div>{" "}
+              <button
+                className="btn btn-lg btn-primary btn-block"
+                type="submit"
+              >
+                Send my one time password
+              </button>
+              {/* <p className="mt-5 mb-3 text-muted ">© 2017-2019</p> */}
+            </form>
+          </div>
+        </div>
+
+        <div className="text-center" hidden={!this.state.emailhidden}>
+          <div className="container">
+            <form
+              className="form-signin"
+              onSubmit={this.onsubmitotp}
+              hidden={!this.state.emailhidden}
+            >
+              <img
+                className="mb-4"
+                src="https://img.icons8.com/nolan/64/000000/share.png"
+                alt=""
+                width={72}
+                height={72}
+              />
+              <h1 className="h3 mb-3 font-weight-normal"> Confirm OTP </h1>
+              <input
+                placeholder="Enter your one time password"
+                id="otp"
+                type="text"
+                required
+                onChange={e => this.setState({ otp: e.target.value })}
+                className="form-control"
+              />
+
+              <div className="text-left remaintimeguest">
+                <span>
+                  Time remaining :
+                  {this.state.timer < 0 && (
+                    <a
+                      className="btn btn-info"
+                      onClick={() => this.resendotp()}
+                    >
+                      {" "}
+                      Resend otp{" "}
+                    </a>
+                  )}{" "}
+                  {this.state.timer}
+                </span>
+              </div>
+              <div
+                className={"container saga" + this.state.alertaction}
+                hidden={this.state.alerthidden}
+              >
+                <span className="">{this.state.alertext}</span>
+              </div>
+              <button
+                className="btn btn-lg btn-primary btn-block"
+                type="submit"
+              >
+                Confirm
+              </button>
+            </form>
+          </div>
+        </div>
         <Footer />
       </div>
     );

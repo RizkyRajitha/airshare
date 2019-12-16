@@ -5,9 +5,9 @@ class Altert extends Component {
     comhide: false
   };
   componentDidMount() {
-    if (!this.props.hiddenalert) {
+    if (this.props.hiddenalert===false) {
       setInterval(() => {
-        this.props.hiddenalert = true;
+        // this.props.hiddenalert = true;
         this.setState({ comhide: true });
       }, 2000);
     }

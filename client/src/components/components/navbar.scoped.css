@@ -1,0 +1,28 @@
+.navbar-brandlanding {
+  position: absolute;
+  padding: 0 !important;
+  top: 0;
+}
+
+.navbarlanding {
+  padding: 1%;
+}
+
+.logonamenavbar {
+  margin-left: 1%;
+}
+
+.navbar-header {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  vertical-align: top !important;
+}
+
+.navbar-toggler {
+  margin: 15px 15px;
+}
+
+.menuicon {
+  border-color: #ffffff !important;
+}

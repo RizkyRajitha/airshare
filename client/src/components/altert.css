@@ -1,7 +1,8 @@
 .bootsrtapaltert {
   position: relative;
   padding: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
+  margin-top: 100px;
+  margin-bottom: -50px;
   border: 1px solid transparent;
   border-top-color: transparent;
   border-right-color: transparent;
@@ -11,6 +12,8 @@
   width: 21%;
   text-align: center;
   margin: 0 auto;
+  animation: swipdown 10s forwards;
+  z-index: 100;
 }
 
 .danger {
@@ -25,9 +28,31 @@
   border-color: #cdedd8;
 }
 
+@keyframes swipdown {
+  0% {
+    opacity: 0;
+    transform: translateY(-200px);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-200px);
+  }
+}
+
 @media screen and (max-width: 1200px) {
   .bootsrtapaltert {
     width: 51%;
+    
   }
 }
 

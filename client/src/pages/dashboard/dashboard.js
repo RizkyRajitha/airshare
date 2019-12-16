@@ -2,28 +2,25 @@ import React, { Component } from "react";
 import axios from "axios";
 import Navbar from "../../components/navbar";
 import Altert from "../../components/altert";
-import "./dashboard.css";
-import Modal from "react-modal";
+import "./dashboard.scoped.css";
 import moments from "moment";
+import io from "socket.io-client";
+import Modal from "react-responsive-modal";
+import Swal from "sweetalert2";
+import {
+  remotecopyclientfunction,
+  remoteuploadclientfunction
+} from "./remotecopy";
 var FileDownload = require("js-file-download");
+
+// const api = "http://localhost:5000";
+
+// const api = "https://airsharebetav2.herokuapp.com";
+const api = "https://airsharebeta.herokuapp.com";
 
 const jwt = require("jsonwebtoken");
 
-const customStyles = {
-  content: {
-    width: "40%",
-    height: "50%",
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)"
-  }
-};
-
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
-Modal.setAppElement("#root");
 
 class Dashboard extends Component {
   state = {
@@ -31,8 +28,7 @@ class Dashboard extends Component {
     alerthidden: true,
     alertext: "",
     alertaction: "",
-    resobj: "",
-    modalIsOpen: false,
+    resobj: [],
     newfoldername: "",
     currentpath: "/",
     hideprogressbar: true,
@@ -41,9 +37,20 @@ class Dashboard extends Component {
     spaceused: "",
     fileuploadprogress: 0,
     deleting: false,
-    isloading: false
+    isloading: false,
+    resobjsize: "",
+    id: "",
+    modelopen: false,
+    shownotify: false,
+    remotecopydata: ""
   };
 
+  openModel = () => {
+    this.setState({ modelopen: true });
+  };
+  closeModel = () => {
+    this.setState({ modelopen: false });
+  };
   componentDidMount() {
     var token = localStorage.getItem("jwt");
 
@@ -59,6 +66,11 @@ class Dashboard extends Component {
       this.props.history.push("/");
     }
 
+    const socket = io(api, {
+      transports: ["websocket"],
+      upgrade: false
+    });
+
     var config = {
       headers: { authorization: token }
     };
@@ -66,10 +78,23 @@ class Dashboard extends Component {
     axios
       .get("/api/userdata", config)
       .then(result => {
+        socket.on("remotecopyclient" + result.data.id, data => {
+          console.log(data);
+          this.setState({ shownotify: true, remotecopydata: data.text });
+        });
+
+        socket.on("filechange" + result.data.id, data => {
+          this.getuserdata();
+          this.getfolderdata();
+          // console.log(data);
+          // this.setState({ shownotify: true, remotecopydata: data.text });
+        });
+
         console.log(result.data);
         this.setState({
           username: result.data.name,
-          spaceused: result.data.storage
+          spaceused: result.data.storage,
+          id: result.data.id
         });
       })
       .catch(err => {
@@ -94,6 +119,8 @@ class Dashboard extends Component {
         console.log(err);
       });
   }
+
+  // copyshareurlbtn = () => {};
 
   getuserdata = () => {
     var token = localStorage.getItem("jwt");
@@ -205,35 +232,102 @@ class Dashboard extends Component {
   };
 
   allowaccess = (path, allowstate) => {
-    console.log(path);
-    console.log(allowstate);
+    if (!allowstate) {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to allow guest access to " + path + " file?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, allow it!"
+      }).then(result => {
+        if (result.value) {
+          console.log(path);
+          console.log(allowstate);
 
-    // console.log(this.state);
-    this.setState({ isloading: true });
-    var jwt = localStorage.getItem("jwt");
-    var config = {
-      headers: {
-        authorization: jwt
-      }
-    };
+          // console.log(this.state);
+          this.setState({ isloading: true });
+          var jwt = localStorage.getItem("jwt");
+          var config = {
+            headers: {
+              authorization: jwt
+            }
+          };
 
-    var payload = {
-      path: path,
-      setallow: !allowstate
-    };
+          var payload = {
+            path: path,
+            setallow: !allowstate
+          };
 
-    axios
-      .post("/api/allowaccess", payload, config)
-      .then(result => {
-        console.log(result.data);
-        this.getfolderdata();
-        this.setState({ isloading: false });
-        // window.location.reload();
-      })
-      .catch(err => {
-        this.setState({ isloading: false });
-        console.log(err);
+          axios
+            .post("/api/allowaccess", payload, config)
+            .then(result => {
+              console.log(result.data);
+              this.getfolderdata();
+              this.setState({ isloading: false });
+              Swal.fire(
+                "Access Granted!",
+                "Your file now has guest access",
+                "success"
+              );
+              // window.location.reload();
+            })
+            .catch(err => {
+              this.setState({ isloading: false });
+              Swal.fire("Error!", "Error occured", "error");
+              console.log(err);
+            });
+        }
       });
+    } else {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to revoke guest access to " + path + " file?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, revoke it!"
+      }).then(result => {
+        if (result.value) {
+          console.log(path);
+          console.log(allowstate);
+
+          // console.log(this.state);
+          this.setState({ isloading: true });
+          var jwt = localStorage.getItem("jwt");
+          var config = {
+            headers: {
+              authorization: jwt
+            }
+          };
+          var payload = {
+            path: path,
+            setallow: !allowstate
+          };
+
+          axios
+            .post("/api/allowaccess", payload, config)
+            .then(result => {
+              console.log(result.data);
+              this.getfolderdata();
+              this.setState({ isloading: false });
+              Swal.fire(
+                "Access Revoked!",
+                "Your file guest access revoked",
+                "success"
+              );
+              // window.location.reload();
+            })
+            .catch(err => {
+              this.setState({ isloading: false });
+              Swal.fire("Error!", "Error occured", "error");
+              console.log(err);
+            });
+        }
+      });
+    }
   };
 
   fileuploaddindicater = (orisize, eventsize) => {
@@ -244,7 +338,14 @@ class Dashboard extends Component {
     // var elem = document.getElementById("myBar");
     // elem.style.width = width + "%";
 
-    console.log(width);
+    console.log(
+      "original size - " +
+        orisize +
+        " eventsize -  " +
+        eventsize +
+        " present - " +
+        width
+    );
 
     if (width > 100) {
       console.log("finish");
@@ -253,51 +354,246 @@ class Dashboard extends Component {
   };
 
   deletefile = (contentid, key) => {
-    this.setState({
-      alerthidden: true,
-      alertext: "",
-      alertaction: ""
+    Swal.fire({
+      // html: true,
+      title: "Sure want to delete \n" + key + "\n ?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(result => {
+      if (result.value) {
+        this.setState({
+          alerthidden: true,
+          alertext: "",
+          alertaction: ""
+        });
+        console.log(key);
+        console.log(contentid);
+        var jwt = localStorage.getItem("jwt");
+        var config = {
+          headers: {
+            authorization: jwt
+          }
+        };
+
+        var payload = {
+          contentid: contentid,
+          key: key
+        };
+
+        this.setState({ deleting: true });
+        this.setState({ isloading: true });
+        axios
+          .post("/api/deletefile", payload, config)
+          .then(result => {
+            this.getfolderdata();
+            this.getuserdata();
+            this.setState({ deleting: false });
+            this.setState({ isloading: false });
+            console.log(result);
+            Swal.fire("Deleted!", key + " successfully deleted", "success");
+          })
+          .catch(err => {
+            console.log(err);
+            this.setState({ deleting: false });
+            this.setState({ isloading: false });
+            Swal.fire({
+              title: "Error!",
+              text: " Error deleting file",
+              icon: "error",
+              confirmButtonText: "Cool"
+            });
+          });
+      }
     });
-    console.log(key);
-    console.log(contentid);
+  };
+
+  presigendurltest = e => {
+    this.setState({ isloading: true });
+    this.setState({ resobj: e.target.files });
+    console.log(e.target.files);
+    var filestobeuploaded = e.target.files;
+    var payload = [];
+    var upname = [];
+    var uploadsize = 0;
+    for (let index = 0; index < e.target.files.length; index++) {
+      const element = e.target.files[index];
+      var temppayload = {
+        name: element.name,
+        size: element.size,
+        type: element.type
+      };
+      upname.push(element.name);
+      uploadsize = uploadsize + element.size;
+      payload.push(temppayload);
+    }
+    var dups = false;
+
+    var remain = 100 * 1024 * 1024 - this.state.spaceused;
+
+    var dupname = "";
+    console.log(this.state.filenamelist, " ", upname);
+
+    label: for (let element of this.state.filenamelist) {
+      for (let ele2 of upname) {
+        console.log(element, " ", ele2);
+
+        if (element === ele2) {
+          console.log("duplicate uploads");
+          dupname = element;
+          dups = true;
+          break label;
+        }
+      }
+    }
+
     var jwt = localStorage.getItem("jwt");
+
     var config = {
       headers: {
         authorization: jwt
       }
     };
 
-    var payload = {
-      contentid: contentid,
-      key: key
-    };
+    if (!dups) {
+      if (remain > uploadsize) {
+        console.log("no dups ok!!!!!!");
+        axios
+          .post("/upload/presigendurlupload", { fileset: payload }, config)
+          .then(result => {
+            console.log(result.data);
+            if (result.data.msg === "success") {
+              console.log(result.data.urlarr);
 
-    this.setState({ deleting: true });
-    this.setState({ isloading: true });
-    axios
-      .post("/api/deletefile", payload, config)
-      .then(result => {
-        this.getfolderdata();
-        this.getuserdata();
-        console.log(result);
+              console.log(this.state.resobj);
+              console.log(filestobeuploaded);
+
+              for (let index = 0; index < filestobeuploaded.length; index++) {
+                const element = filestobeuploaded[index];
+                console.log(element);
+
+                this.setState({
+                  alerthidden: false,
+                  alertext: "file " + index + " upload initiated",
+                  alertaction: "success",
+                  isloading: true
+                });
+                var contendis = 'attachment; filename="' + element.name + '"';
+                var config = {
+                  onUploadProgress: progressEvent =>
+                    this.fileuploaddindicater(
+                      element.size,
+                      progressEvent.loaded
+                    ),
+                  headers: {
+                    "Content-Type": element.type,
+                    "Content-Disposition": contendis
+                  }
+                };
+
+                axios
+                  .put(result.data.urlarr[index], element, config)
+                  .then(result2 => {
+                    this.getfolderdata();
+                    this.getuserdata();
+                    console.log(result2);
+                    remoteuploadclientfunction({ id: this.state.id });
+                    this.setState({
+                      alerthidden: false,
+                      alertext: "file " + index + " successfully uploaded",
+                      alertaction: "success",
+                      isloading: false,
+                      hideprogressbar: true
+                    });
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    this.setState({
+                      alerthidden: false,
+                      alertext: "file " + index + "  upload error",
+                      alertaction: "danger",
+                      isloading: false,
+                      hideprogressbar: true
+                    });
+                  });
+              }
+
+              // filestobeuploaded.forEach(e => console.log(e));
+              // this.state.resobj.forEach(async (objects, index) => {
+              // var config = {
+              //   onUploadProgress: progressEvent =>
+              //     this.fileuploaddindicater(
+              //       objects.size,
+              //       progressEvent.loaded
+              //     ),
+              //   headers: {
+              //     "Content-Type": objects.type
+              //   }
+              // };
+              // await axios
+              //   .put(result.data.urlarr[index], objects, config)
+              //   .then(result2 => {
+              //     console.log(result2);
+              //     this.setState({
+              //       alerthidden: false,
+              //       alertext: "file successfully uploaded",
+              //       alertaction: "success",
+              //       isloading: true
+              //     });
+              //   })
+              //   .catch(err => {
+              //     console.log(err);
+              //   });
+              // });
+
+              // axios
+              // .put(result.data.resurl, this.state.resobj, config)
+              // .then(result2 => {
+              //   console.log(result2);
+              //   this.setState({
+              //     alerthidden: false,
+              //     alertext: "file successfully uploaded",
+              //     alertaction: "success",
+              //     isloading: true
+              //   });
+              // })
+              // .catch(err => {
+              //   console.log(err);
+              // });
+            } else if (result.data.msg === "lowspace") {
+              this.getfolderdata();
+              this.getuserdata();
+              this.setState({
+                alerthidden: false,
+                alertext: "Low space",
+                alertaction: "danger",
+                isloading: false
+              });
+            }
+          })
+          .catch(err => {
+            this.setState({ isloading: false });
+            console.log(err);
+          });
+      } else {
         this.setState({
           alerthidden: false,
-          alertext: key + " successfully deleted",
-          alertaction: "success",
-          isloading: false,
-          deleting: false
-        });
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({
-          alerthidden: false,
-          alertext: key + " Error deleting file",
+          alertext: ` You ran out of space buddy `,
           alertaction: "danger",
-          isloading: false,
-          deleting: false
+          isloading: false
         });
+      }
+    } else {
+      this.setState({
+        alerthidden: false,
+        alertext: `Duplicate files found please remove them and try again  "${dupname}" `,
+        alertaction: "danger",
+        isloading: false
       });
+    }
   };
 
   uploadfile = e => {
@@ -342,7 +638,7 @@ class Dashboard extends Component {
       }
     });
 
-    console.log("kokok");
+    // console.log("kokok");
 
     // formdata.append("path", this.state.currentpath);
     //
@@ -406,6 +702,75 @@ class Dashboard extends Component {
     }
   };
 
+  copyremoteshare = () => {
+    this.setState({ shownotify: false });
+    var copyText = document.getElementById("remotecopytextarea");
+
+    /* Select the text field */
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+    /* Copy the text inside the text field */
+    document.execCommand("copy");
+  };
+
+  sharefile = (name, size) => {
+    var jwt = localStorage.getItem("jwt");
+
+    var config = {
+      headers: {
+        authorization: jwt
+      }
+    };
+
+    var payload = {
+      key: name,
+      size: size
+    };
+
+    axios
+      .post("/api/sharefile", payload, config)
+      .then(res => {
+        console.log(res.data);
+
+        Swal.fire({
+          title: "Share file",
+          input: "text",
+          inputValue: res.data.resurl,
+          inputAttributes: {
+            id: "sharefilelinkswaltectinput"
+          },
+          // text: " Error deleting file",
+          html:
+            '<button class="btn btn-primary" id="sharefilelinkswalcopybtn" >Copy link</button> ',
+          icon: "success",
+          confirmButtonText: "Cool"
+        });
+
+        var copysharebtnnn = document.getElementById(
+          "sharefilelinkswalcopybtn"
+        );
+        copysharebtnnn.addEventListener("click", function() {
+          // alert("boom");
+          var copyText = document.getElementById("sharefilelinkswaltectinput");
+
+          /* Select the text field */
+          copyText.select();
+          copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+          /* Copy the text inside the text field */
+          document.execCommand("copy");
+        });
+        //   Swal.fire("Share file", res.data.resurl, "success",html:
+        //   'You can use <b>bold text</b>, ' +
+        //   '<a href="//sweetalert2.github.io">links</a> ' +
+        //   'and other HTML tags',);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+
   render() {
     return (
       <div className="">
@@ -413,6 +778,8 @@ class Dashboard extends Component {
           useractive="true"
           username={this.state.username}
           type="dashboard"
+          clickremotesharenotify={this.openModel}
+          shownotify={this.state.shownotify}
         />
         <div class="container">
           {/* <div class="row"> */}
@@ -423,6 +790,44 @@ class Dashboard extends Component {
             hiddenalert={this.state.alerthidden}
           />
 
+          <Modal
+            // className="commentmodal"
+            open={this.state.modelopen}
+            onClose={this.closeModel}
+            closeIconSize={20}
+            styles={{ modal: { color: "black", width: "50%", height: "44%" } }}
+            center
+          >
+            <div className="textsharemodalflexfiv">
+              <span className="textshareheading">Start sharing text</span>
+
+              <button
+                className="btn btn-primary textsharemodalcopybtn"
+                onClick={() => {
+                  this.copyremoteshare();
+                }}
+              >
+                <i className="far fa-copy"></i>
+              </button>
+            </div>
+
+            <div class="form-group">
+              <textarea
+                id="remotecopytextarea"
+                class="form-control"
+                rows="6"
+                value={this.state.remotecopydata}
+                onChange={e =>
+                  remotecopyclientfunction({
+                    text: e.target.value,
+                    uid: this.state.id
+                  })
+                }
+              ></textarea>
+            </div>
+          </Modal>
+
+          {/* {this.state.remotecopydata} */}
           {/* <input
             class="custom-file-input"
             id="inputGroupFile01"
@@ -480,11 +885,16 @@ class Dashboard extends Component {
             </div>
 
             <div className="dashboardbtnbr"></div>
-
+            <button
+              className="btn btn-primary fileuploadbtn  "
+              onClick={() => this.openModel()}
+            >
+              Text share
+            </button>
             <input
               type="file"
               name="resobj"
-              onChange={this.uploadfile}
+              onChange={this.presigendurltest}
               class="dashfileinput"
               id="customFile"
               multiple
@@ -502,7 +912,9 @@ class Dashboard extends Component {
                   <th scope="col">Item Name</th>
                   <th scope="col">Item last modified</th>
                   <th scope="col">Item size</th>
-                  <th scope="col"></th> <th scope="col"></th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
                   <th scope="col"></th>
                 </tr>
               </thead>
@@ -513,48 +925,66 @@ class Dashboard extends Component {
 
                   return (
                     <tr>
-                      <td>
-                        <img src="https://img.icons8.com/color/48/000000/file.png"></img>
+                      <td className="tabledata-dashboard">
+                        <img
+                          className="dashboardfileicon"
+                          src="https://img.icons8.com/color/48/000000/file.png"
+                        ></img>
                       </td>
-                      <td className="tabledatanamedash">{ele.Key}</td>
-                      <td>
-                        {moments(
-                          ele.LastModified,
-                          "YYYY-MM-DD HH:mm:ssZ"
-                        ).fromNow()}
+                      <td className="tabledatanamedash tabledata-dashboard ">
+                        {ele.name}
                       </td>
-                      <td>{(ele.Size / 1024 / 1024).toFixed(3) + " Mb"}</td>
                       <td>
+                        {moments(ele.created, "YYYY-MM-DD HH:mm:ssZ").fromNow()}
+                      </td>
+                      <td className="tabledata-dashboard">
+                        {(ele.size / 1024 / 1024).toFixed(3) + " Mb"}
+                      </td>
+                      <td className="tabledata-dashboard">
+                        <button
+                          disabled={this.state.deleting}
+                          className="btn btn-primary "
+                          onClick={() => {
+                            this.sharefile(
+                              ele.name,
+                              (ele.size / 1024 / 1024).toFixed(3) + " Mb"
+                            );
+                          }}
+                        >
+                          Share
+                        </button>
+                      </td>
+                      <td className="tabledata-dashboard">
                         {" "}
                         <button
                           disabled={this.state.deleting}
                           className="btn btn-primary "
                           onClick={() => {
-                            this.downloadfile(ele.Key);
+                            this.downloadfile(ele.name);
                           }}
                         >
                           Download
                         </button>{" "}
                       </td>
-                      <td>
+                      <td className="tabledata-dashboard">
                         <button
                           disabled={this.state.deleting}
                           className={`btn ${
                             ele.allowaccess ? "btn-success" : "btn-warning "
                           } `}
                           onClick={() => {
-                            this.allowaccess(ele.contentid, ele.allowaccess);
+                            this.allowaccess(ele._id, ele.allowaccess);
                           }}
                         >
                           {ele.allowaccess ? "Revoke access" : "Allow access "}
                         </button>{" "}
                       </td>
-                      <td>
+                      <td className="tabledata-dashboard">
                         <button
                           disabled={this.state.deleting}
                           className={`btn btn-danger `}
                           onClick={() => {
-                            this.deletefile(ele.contentid, ele.Key);
+                            this.deletefile(ele._id, ele.name);
                           }}
                         >
                           Delete
@@ -577,3 +1007,56 @@ class Dashboard extends Component {
 }
 
 export default Dashboard;
+
+/**
+ *    this.setState({
+      alerthidden: true,
+      alertext: "",
+      alertaction: ""
+    });
+    this.setState({ isloading: true });
+    this.setState({ resobj: e.target.files[0] });
+    this.setState({ resobjsize: e.target.files[0].size });
+
+    console.log(e.target.files);
+
+    var payload = {
+      name: e.target.files[0].name,
+      size: e.target.files[0].size,
+      type: e.target.files[0].type
+    };
+    console.log(payload);
+    // formdata.append("resobj", e.target.files[0]);
+
+    // console.log("no dups ok!!!!!!");
+
+    var config = {
+      onUploadProgress: progressEvent =>
+        this.fileuploaddindicater(this.state.resobjsize, progressEvent.loaded),
+      headers: {
+        "Content-Type": e.target.files[0].type
+      }
+    };
+
+    axios
+      .post("/upload/presigendurltest", payload)
+      .then(result => {
+        console.log(result.data);
+
+        axios
+          .put(result.data.resurl, this.state.resobj, config)
+          .then(result2 => {
+            console.log(result2);
+            this.setState({
+              alerthidden: false,
+              alertext: "file successfully uploaded",
+              alertaction: "success",
+              isloading: true
+            });
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      })
+      .catch(err => console.log(err));
+ */

@@ -9,7 +9,8 @@ const jwtsecret =
   process.env.jwtsecret || require("../../config/env").jwtsecret;
 
 const awskey = process.env.awskey || require("../../config/env").awskey;
-const awsseacret = process.env.awskey || require("../../config/env").awsseacret;
+const awsseacret =
+  process.env.awsseacret || require("../../config/env").awsseacret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 exports.signup = (req, res) => {
@@ -59,14 +60,42 @@ exports.signup = (req, res) => {
                     .status(200)
                     .json({ error: true, msg: "BucketAlreadyExists" });
                 }
-                res
-                  .status(200)
-                  .json({ error: true, msg: "errorcreatingbucket" });
+                // res
+                //   .status(200)
+                //   .json({ error: true, msg: "errorcreatingbucket" });
               }
               // an error occurred
               else {
                 console.log(data);
+                var thisConfig = {
+                  AllowedHeaders: ["*"],
+                  AllowedMethods: ["PUT", "GET"],
+                  AllowedOrigins: ["*"],
+                  ExposeHeaders: [],
+                  MaxAgeSeconds: 3000
+                };
 
+                var corsRules = new Array(thisConfig);
+
+                // Create CORS params
+                var corsParams = {
+                  Bucket: datain.username,
+                  CORSConfiguration: { CORSRules: corsRules }
+                };
+
+                s3bucket
+                  .putBucketCors(corsParams)
+                  .promise()
+                  .then(result => {
+                    console.log(result);
+                    res.status(200).json({ data: data, msg: "success" });
+                  })
+                  .catch(err => {
+                    res
+                      .status(200)
+                      .json({ error: true, msg: "errorcreatingbucket" });
+                    console.log(err);
+                  });
                 Invitecode.findOneAndDelete({ invitecode: datain.invitecode })
                   .then(doc2 => {
                     console.log(" invite code vaild deleted ");
@@ -91,7 +120,7 @@ exports.signup = (req, res) => {
                 sgMail
                   .send(msg)
                   .then(result => {
-                    console.log(result);
+                    // console.log(result);
                   })
                   .catch(err => {
                     console.log(err);

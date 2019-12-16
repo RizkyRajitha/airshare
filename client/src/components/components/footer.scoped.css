@@ -1,0 +1,152 @@
+.footer-area {
+  background: #34363a;
+  /* position: fixed; */
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.footer-area .footer-titel {
+  font-size: 20px;
+  color: #fff;
+  font-weight: 700;
+  padding-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.footer-area ul li {
+  margin-bottom: 10px;
+}
+
+.footer-area ul li a {
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.footer-area ul li a:hover {
+  color: #137ed9;
+}
+
+.footer-area #subscribe-form {
+  margin-top: 15px;
+}
+
+.footer-area #subscribe-form .form-group {
+  position: relative;
+}
+
+.footer-area #subscribe-form .form-group .btn-common {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 7px 15px;
+  height: 39px;
+  border-radius: 0;
+  background: transparent;
+  color: #137ed9;
+  border-left: 1px solid #ddd;
+}
+
+#copyright {
+  background: #34363a;
+  border-top: 2px dotted #3b3d42;
+  padding: 10px;
+}
+
+#copyright p {
+  line-height: 42px;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+}
+
+#copyright p a {
+  color: #fff;
+}
+
+#copyright p a:hover {
+  color: #137ed9;
+}
+
+a {
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a a:focus {
+  outline: none;
+}
+
+p {
+  font-weight: 400;
+  font-family: "Montserrat", sans-serif;
+  margin: 0px;
+  font-size: 14px;
+  color: #fff;
+}
+
+ul,
+ol {
+  list-style: outside none none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li,
+ol li {
+  list-style: none;
+}
+
+.icon-close,
+.icon-check {
+  color: #137ed9;
+}
+
+.social-icon a {
+  color: #666;
+  background: #fff;
+  width: 32px;
+  height: 32px;
+  line-height: 34px;
+  display: inline-block;
+  text-align: center;
+  border-radius: 100%;
+  font-size: 16px;
+  margin: 15px 6px 12px 4px;
+  transition: all 0.3s ease-in-out 0s;
+  -moz-transition: all 0.3s ease-in-out 0s;
+  -webkit-transition: all 0.3s ease-in-out 0s;
+  -o-transition: all 0.3s ease-in-out 0s;
+}
+
+.social-icon a:hover {
+  color: #fff !important;
+}
+
+.social-icon .facebook:hover {
+  background: #3b5999;
+}
+
+.social-icon .twitter:hover {
+  background: #4a9cec;
+}
+
+.social-icon .instagram:hover {
+  background: #d6274d;
+}
+
+.social-icon .linkedin:hover {
+  background: #1260a2;
+}
+
+.social-icon .google:hover {
+  background: #ce332a;
+}
