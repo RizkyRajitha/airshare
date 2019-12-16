@@ -29,6 +29,7 @@ const jwtsecret = require("./config/env").jwtsecret;
 var AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-2" });
 
+
 const awskey = process.env.awskey || require("./config/env").awskey;
 const awsseacret = process.env.awsseacret || require("./config/env").awsseacret;
 
@@ -36,6 +37,7 @@ let s3bucket = new AWS.S3({
   accessKeyId: awskey,
   secretAccessKey: awsseacret
 });
+
 
 const port = process.env.PORT || 5000;
 
@@ -383,14 +385,18 @@ app.post("/presigendurltest", (req, res) => {
 });
 
 // app.get("/", (req, res) => {
-// from: "+12512610310",
-// to: "+"
+
+// from: "+333333333",
+// to: "+*********"
+
 
 // twillioclient.messages
 //   .create({
-//     from: "whatsapp:+14155238886",
+//     from: "whatsapp:+33333333333",
 //     body: "Hello there!",
-//     to: "whatsapp:+"
+
+//     to: "whatsapp:+************"
+
 //   })
 //   .then(message => console.log(message.sid))
 //   .catch(err => {
@@ -421,10 +427,12 @@ app.post("/presigendurltest", (req, res) => {
 // twillioclient.messages
 //   .create({
 //     body: "This is the ship that made the Kessel Run in fourteen parsecs?",
+
 //     from: "+12512610310",
 //     to: "+"
 //   })
 //   .then(message => console.log(message.sid));
+
 
 try {
   mongoose.connect(
